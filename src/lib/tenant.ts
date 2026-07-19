@@ -20,6 +20,7 @@ const PLATFORM_HOSTS = new Set<string>([
 
 export type TenantOrg = {
   id: string;
+  owner_id: string;
   name: string;
   slug: string;
   status: string;
@@ -73,7 +74,7 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
   if (subdomainSlug) {
     const { data } = await supabase
       .from("orgs")
-      .select("id, name, slug, status")
+      .select("id, owner_id, name, slug, status")
       .eq("slug", subdomainSlug)
       .maybeSingle();
     org = (data as TenantOrg | null) ?? null;
@@ -88,7 +89,7 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
     if (orgId) {
       const { data } = await supabase
         .from("orgs")
-        .select("id, name, slug, status")
+        .select("id, owner_id, name, slug, status")
         .eq("id", orgId)
         .maybeSingle();
       org = (data as TenantOrg | null) ?? null;

@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { isAdmin, type Role } from "@/lib/roles";
 
 /**
  * Nav lateral do workspace do professor (adaptação web das tabs do mockup mobile). Itens de
  * sub-fases futuras entram desabilitados até chegar a vez. Hrefs "limpos" (`/gerenciar/*`) —
  * o proxy reescreve o host de tenant para `/portal/*`, mas o usePathname/URL segue limpo.
  */
-type Item = { href: string; label: string; icon: ReactNode; soon?: boolean };
+type Item = { href: string; label: string; icon: ReactNode; soon?: boolean; adminOnly?: boolean };
 
 function Icon({ d }: { d: string }) {
   return (
@@ -35,15 +36,17 @@ const ITEMS: Item[] = [
   { href: "/gerenciar/aulas", label: "Aulas", icon: <Icon d="M4 5h11a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2V5Z" />, soon: true },
   { href: "/gerenciar/progresso", label: "Progresso", icon: <Icon d="M4 19V5M4 19h16M8 15v-3M12 15V9M16 15v-6" />, soon: true },
   { href: "/gerenciar/financeiro", label: "Financeiro", icon: <Icon d="M3 7h18v10H3zM3 10h18M7 14h3" />, soon: true },
+  { href: "/gerenciar/equipe", label: "Equipe", icon: <Icon d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 20c0-2.8 2.7-5 6-5s6 2.2 6 5M16 5.5a3 3 0 0 1 0 6M18 20c0-1.8-.7-3.4-1.9-4.6" />, adminOnly: true },
   { href: "/gerenciar/ajustes", label: "Ajustes", icon: <Icon d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19 12l1.5 1-1 2-1.8-.4-1.2 1.5.4 1.8-2 1-1.3-1.5-1.9.4-1.3 1.1-2-1 .4-1.8L4 13l-1.5-1 1-2 1.8.4L6.5 9l-.4-1.8 2-1L9.4 7.7 11.3 7l1.3-1.1 2 1-.4 1.8L15.4 10" />, soon: true },
 ];
 
-export function DashboardNav() {
+export function DashboardNav({ role }: { role: Role }) {
   const pathname = usePathname();
+  const items = ITEMS.filter((it) => !it.adminOnly || isAdmin(role));
 
   return (
     <nav className="flex flex-col gap-1">
-      {ITEMS.map((it) => {
+      {items.map((it) => {
         const active =
           it.href === "/gerenciar"
             ? pathname === "/gerenciar"

@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireTeacher } from "@/lib/teacher";
+import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
+import { planLimits, withinLimit } from "@/lib/plans";
 
 export type StudentState = { ok?: boolean; error?: string };
 
@@ -25,11 +26,22 @@ export async function createStudent(
   _prev: StudentState,
   formData: FormData,
 ): Promise<StudentState> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const { name, email, phone, notes } = readFields(formData);
   if (!name) return { error: "Informe o nome do aluno." };
 
   const supabase = await createClient();
+
+  // teto de alunos por plano
+  const [{ data: org }, { count }] = await Promise.all([
+    supabase.from("orgs").select("plan").eq("id", tenant.org.id).maybeSingle(),
+    supabase.from("students").select("id", { count: "exact", head: true }).eq("org_id", tenant.org.id),
+  ]);
+  const limit = planLimits((org as { plan?: string } | null)?.plan).maxStudents;
+  if (!withinLimit(count ?? 0, limit)) {
+    return { error: `Limite de alunos do plano atingido (${limit}). Faça upgrade para adicionar mais.` };
+  }
+
   const { error } = await supabase
     .from("students")
     .insert({ org_id: tenant.org.id, name, email, phone, notes });
@@ -46,7 +58,7 @@ export async function updateStudent(
   _prev: StudentState,
   formData: FormData,
 ): Promise<StudentState> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
   const { name, email, phone, notes } = readFields(formData);
   if (!id) return { error: "Aluno inválido." };
@@ -68,7 +80,7 @@ export async function updateStudent(
 
 /** Ativa/inativa um aluno (soft — preserva histórico). */
 export async function setStudentStatus(formData: FormData): Promise<void> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "");
   if (!id || (status !== "active" && status !== "inactive")) return;
@@ -84,7 +96,7 @@ export async function setStudentStatus(formData: FormData): Promise<void> {
 
 /** Remove um aluno em definitivo (usado com confirmação na UI). */
 export async function removeStudent(formData: FormData): Promise<void> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
 

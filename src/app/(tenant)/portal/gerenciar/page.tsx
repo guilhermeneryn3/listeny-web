@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { requireTeacher } from "@/lib/teacher";
+import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
 
 /** Início do workspace: contadores reais + próximos passos. Sem mock data. */
 export default async function GerenciarHome() {
-  const { tenant, role } = await requireTeacher();
+  const { tenant, role } = await requireManager();
   const supabase = await createClient();
 
   const [{ count: alunos }, { count: turmas }] = await Promise.all([

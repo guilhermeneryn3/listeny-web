@@ -2,24 +2,21 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { resolveTenant, type Tenant } from "@/lib/tenant";
 import { createClient } from "@/lib/supabase/server";
+import { MANAGER_ROLES, type Role } from "@/lib/roles";
 
-export type TeacherRole = "owner" | "teacher" | "staff";
-
-export type TeacherContext = {
+export type ManagerContext = {
   tenant: Tenant;
   userId: string;
-  role: TeacherRole;
+  role: Role;
 };
 
 /**
- * Gate da área do professor (`/gerenciar`). Resolve o tenant pelo host, exige sessão e que o
- * usuário GERENCIE este org (dono ou membership teacher/staff). Redireciona quando não bate:
- *  - sem tenant → `/` (o shell do tenant já trata "portal não encontrado");
- *  - sem sessão → `/entrar?next=/gerenciar`;
- *  - logado mas sem vínculo de gestão → `/sem-acesso`.
- * Chamado no layout de `/gerenciar` e reutilizável nas server actions.
+ * Gate do painel de gestão (`/gerenciar`). Resolve o tenant pelo host, exige sessão e um papel
+ * de GESTÃO neste org (dono/diretor/coordenador/professor/staff — ver MANAGER_ROLES).
+ * Redireciona: sem tenant → `/`; sem sessão → `/entrar?next=/gerenciar`; logado sem papel de
+ * gestão (aluno/responsável) → `/sem-acesso`. Reutilizável em server actions.
  */
-export async function requireTeacher(): Promise<TeacherContext> {
+export async function requireManager(): Promise<ManagerContext> {
   const h = await headers();
   const host = h.get("x-tenant-host") ?? h.get("host") ?? "";
   const tenant = await resolveTenant(host);
@@ -41,8 +38,8 @@ export async function requireTeacher(): Promise<TeacherContext> {
     .eq("org_id", tenant.org.id)
     .eq("user_id", user.id)
     .maybeSingle();
-  const role = (mem as { role?: string } | null)?.role;
-  if (role === "teacher" || role === "staff") {
+  const role = (mem as { role?: Role } | null)?.role;
+  if (role && MANAGER_ROLES.includes(role)) {
     return { tenant, userId: user.id, role };
   }
 

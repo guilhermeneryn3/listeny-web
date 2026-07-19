@@ -1,10 +1,10 @@
-import { requireTeacher } from "@/lib/teacher";
+import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
 import { ClassesManager, type ClassRow, type StudentLite } from "./_components/ClassesManager";
 
 /** Turmas do professor + vínculo de alunos. Dados reais (RLS por org). */
 export default async function TurmasPage() {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const supabase = await createClient();
 
   const [classesRes, studentsRes, linksRes] = await Promise.all([

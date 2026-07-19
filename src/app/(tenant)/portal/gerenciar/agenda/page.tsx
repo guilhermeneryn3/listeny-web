@@ -1,4 +1,4 @@
-import { requireTeacher } from "@/lib/teacher";
+import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
 import {
   AgendaManager,
@@ -10,7 +10,7 @@ import {
 
 /** Agenda do professor: sessões (presencial/online) + participantes e presença. */
 export default async function AgendaPage() {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const supabase = await createClient();
   const orgId = tenant.org.id;
 

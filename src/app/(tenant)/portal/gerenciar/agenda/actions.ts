@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireTeacher } from "@/lib/teacher";
+import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -65,7 +65,7 @@ export async function createSession(
   _prev: SessionState,
   formData: FormData,
 ): Promise<SessionState> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const f = readFields(formData);
   if ("error" in f) return { error: f.error };
 
@@ -122,7 +122,7 @@ export async function updateSession(
   _prev: SessionState,
   formData: FormData,
 ): Promise<SessionState> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
   const f = readFields(formData);
   if (!id) return { error: "Sessão inválida." };
@@ -173,7 +173,7 @@ export async function updateSession(
 }
 
 export async function setSessionStatus(formData: FormData): Promise<void> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "");
   if (!id || !["scheduled", "done", "canceled", "no_show"].includes(status)) return;
@@ -185,7 +185,7 @@ export async function setSessionStatus(formData: FormData): Promise<void> {
 }
 
 export async function setAttendance(formData: FormData): Promise<void> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const sessionId = String(formData.get("session_id") ?? "");
   const studentId = String(formData.get("student_id") ?? "");
   const attendance = String(formData.get("attendance") ?? "");
@@ -205,7 +205,7 @@ export async function setAttendance(formData: FormData): Promise<void> {
 }
 
 export async function removeSession(formData: FormData): Promise<void> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
 

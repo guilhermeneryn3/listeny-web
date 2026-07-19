@@ -36,6 +36,8 @@ export async function createOrg(
     .toLowerCase();
   const themeTemplateId = String(formData.get("theme_template_id") ?? "").trim();
   const logoUrl = String(formData.get("logo_url") ?? "").trim();
+  const kind =
+    String(formData.get("kind") ?? "individual") === "institution" ? "institution" : "individual";
 
   if (!name) return { error: "Informe o nome do portal." };
   if (!slug) return { error: "Informe o endereço (slug) do portal." };
@@ -49,7 +51,7 @@ export async function createOrg(
   // (b) org
   const { data: org, error: orgErr } = await supabase
     .from("orgs")
-    .insert({ owner_id: user.id, name, slug })
+    .insert({ owner_id: user.id, name, slug, kind })
     .select("id, slug")
     .single();
   if (orgErr || !org) {

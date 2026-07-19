@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireTeacher } from "@/lib/teacher";
+import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
 
 export type ClassState = { ok?: boolean; error?: string };
@@ -15,7 +15,7 @@ export async function createClass(
   _prev: ClassState,
   formData: FormData,
 ): Promise<ClassState> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   if (!name) return { error: "Informe o nome da turma." };
@@ -33,7 +33,7 @@ export async function updateClass(
   _prev: ClassState,
   formData: FormData,
 ): Promise<ClassState> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
@@ -52,7 +52,7 @@ export async function updateClass(
 }
 
 export async function removeClass(formData: FormData): Promise<void> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
 
@@ -63,7 +63,7 @@ export async function removeClass(formData: FormData): Promise<void> {
 
 /** Vincula/desvincula um aluno a uma turma. Garante que ambos são do MESMO org do professor. */
 export async function setClassStudent(formData: FormData): Promise<void> {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
   const classId = String(formData.get("class_id") ?? "");
   const studentId = String(formData.get("student_id") ?? "");
   const on = String(formData.get("on") ?? "") === "true";

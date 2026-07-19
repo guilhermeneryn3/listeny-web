@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { requireTeacher } from "@/lib/teacher";
+import { requireManager } from "@/lib/teacher";
 import { DashboardNav } from "./_components/DashboardNav";
 
 /**
- * Shell do workspace do professor. `requireTeacher()` é o gate (tenant + sessão + vínculo de
+ * Shell do workspace do professor. `requireManager()` é o gate (tenant + sessão + vínculo de
  * gestão) — redireciona quem não pode. A marca do tenant já veio do `portal/layout` (header +
  * tokens CSS); aqui adicionamos a nav lateral.
  */
@@ -12,7 +12,7 @@ export default async function GerenciarLayout({
 }: {
   children: ReactNode;
 }) {
-  const { tenant } = await requireTeacher();
+  const { tenant } = await requireManager();
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 gap-6 px-4 py-6 sm:px-6">

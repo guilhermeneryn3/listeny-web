@@ -64,6 +64,16 @@ export function CreateOrgForm({ templates }: { templates: TemplateOption[] }) {
       </div>
 
       <div>
+        <label htmlFor="kind" className="mb-1.5 block text-sm font-medium">
+          Tipo de conta
+        </label>
+        <select id="kind" name="kind" defaultValue="individual" className={fieldClass}>
+          <option value="individual">Professor individual</option>
+          <option value="institution">Instituição / escola</option>
+        </select>
+      </div>
+
+      <div>
         <label htmlFor="slug" className="mb-1.5 block text-sm font-medium">
           Endereço
         </label>

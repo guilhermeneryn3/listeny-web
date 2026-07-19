@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/*
+  Contrato de tokens do Educaty (tema CLARO padrão = template `teal-clean`).
+
+  Cada token do banco vira uma variável CSS aqui via @theme inline, o que gera as
+  utilities do Tailwind (bg-primary, text-ink, border-edge, …). Como são variáveis
+  CSS de verdade, o shell do tenant sobrescreve `--color-*` inline num wrapper e
+  TODA a subárvore reflete a marca do tenant por cascata — sem hardcode na UI.
+*/
+@theme inline {
+  --color-primary: #14b8a6;
+  --color-primary-dark: #0d9488;
+  --color-bg: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-ink: #17181d;
+  --color-sub: #5a6172;
+  --color-hint: #9aa0ab;
+  --color-edge: #ececf2;
+  --color-soft: #f1f3f7;
+  --color-success: #16a34a;
+  --color-warn: #b45309;
+  --color-danger: #f0473c;
+  --color-tint: #ecfdf9;
+
+  --font-sans: var(--font-jakarta);
+}
+
+/* Defaults sobrescritíveis pelo tenant (radius e fonte da marca). */
+:root {
+  --radius: 16px;
+  --font-tenant: var(--font-jakarta);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+/* Rolagem suave para navegação por âncoras. */
+html {
+  scroll-behavior: smooth;
+}

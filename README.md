@@ -1,10 +1,10 @@
-# educaty-web
+# listeny-web
 
-Portal web multi-tenant white-label do **Educaty** — um produto N3 Labz.
+Portal web multi-tenant white-label do **Listeny** — um produto N3 Labz.
 
 Cada professor/criador tem o SEU portal com marca própria (logo, cores, tema,
 domínio opcional). O portal web **é** o produto; o backend é um projeto Supabase
-(o "cérebro"), cujo schema mora em `../Educaty/supabase/migrations`.
+(o "cérebro"), cujo schema mora em `../Listeny/supabase/migrations`.
 
 Stack: Next.js 16 (App Router) · React 19 · Tailwind CSS v4 · @supabase/ssr ·
 TypeScript strict. Alias `@/* → ./src/*`.
@@ -12,9 +12,9 @@ TypeScript strict. Alias `@/* → ./src/*`.
 ## Como o multi-tenant funciona
 
 - **`src/proxy.ts`** roteia por host:
-  - Host de plataforma (`educaty.app`, `www.educaty.app`, `localhost`,
+  - Host de plataforma (`listeny.app`, `www.listeny.app`, `localhost`,
     `127.0.0.1`, `*.vercel.app`) → páginas públicas (`/`, `/criar`, `/login`).
-  - Host de tenant (`<slug>.educaty.app`, `<slug>.localhost` em dev, ou domínio
+  - Host de tenant (`<slug>.listeny.app`, `<slug>.localhost` em dev, ou domínio
     próprio) → reescreve para `/portal/*` e injeta o header `x-tenant-host`.
 - **`src/lib/tenant.ts` → `resolveTenant(host)`** resolve o tenant pelo host:
   slug (subdomínio) → `orgs`; domínio próprio → `org_domains` (status `active`).
@@ -36,11 +36,11 @@ Copie `.env.example` para `.env.local`:
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (só servidor)
 - `NEXT_PUBLIC_SITE_URL`
-- `NEXT_PUBLIC_EDUCATY_APP_DOMAIN` (default `educaty.app`)
+- `NEXT_PUBLIC_LISTENY_APP_DOMAIN` (default `listeny.app`)
 
 ## DNS / deploy (para os tenants funcionarem)
 
-- Wildcard `*.educaty.app` apontando para o app (Vercel) — habilita os
+- Wildcard `*.listeny.app` apontando para o app (Vercel) — habilita os
   subdomínios de tenant.
 - Domínios próprios de tenant: attach/verificação/SSL são fase seguinte
   (a tabela `org_domains` já modela o estado).

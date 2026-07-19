@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-/** Client do Supabase (projeto Educaty) para Server Components / Server Actions, com sessão via cookies. */
+/** Client do Supabase (projeto Listeny) para Server Components / Server Actions, com sessão via cookies. */
 export async function createClient() {
   const cookieStore = await cookies();
 

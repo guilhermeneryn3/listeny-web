@@ -4,7 +4,7 @@ import { BrandMark } from "@/components/BrandMark";
 import { CreateOrgForm, type TemplateOption } from "./CreateOrgForm";
 
 export const metadata = {
-  title: "Crie seu portal — Educaty",
+  title: "Crie seu portal — Listeny",
 };
 
 export default async function CriarPage() {
@@ -26,7 +26,7 @@ export default async function CriarPage() {
     <main className="flex flex-1 flex-col bg-bg text-ink">
       <header className="mx-auto flex w-full max-w-2xl items-center gap-2 px-6 py-6 text-lg font-extrabold tracking-tight">
         <BrandMark />
-        Educaty
+        Listeny
       </header>
 
       <section className="mx-auto w-full max-w-2xl px-6 pb-20">

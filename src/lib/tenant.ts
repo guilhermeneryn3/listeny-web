@@ -7,7 +7,7 @@ import {
 
 /** Domínio-app da plataforma. Subdomínios `<slug>.APP_DOMAIN` são tenants. */
 const APP_DOMAIN = (
-  process.env.NEXT_PUBLIC_EDUCATY_APP_DOMAIN ?? "educaty.app"
+  process.env.NEXT_PUBLIC_LISTENY_APP_DOMAIN ?? "listeny.app"
 ).toLowerCase();
 
 /** Hosts que são a PLATAFORMA (não um tenant): landing, criar, login, painel. */
@@ -51,7 +51,7 @@ export function isPlatformHost(host: string): boolean {
  * Resolve o tenant a partir do host da requisição.
  *
  *  - host de plataforma → `null` (é a plataforma, não um tenant).
- *  - `<slug>.educaty.app` (ou `<slug>.localhost` em dev) → `orgs` por slug.
+ *  - `<slug>.listeny.app` (ou `<slug>.localhost` em dev) → `orgs` por slug.
  *  - qualquer outro host → `org_domains` por hostname (status active) → org.
  *
  * Usa o client anon do servidor: branding/orgs/org_domains/theme_templates são
@@ -135,7 +135,7 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
 }
 
 /**
- * Se o host for um subdomínio da plataforma (`<slug>.educaty.app`) ou, em dev,
+ * Se o host for um subdomínio da plataforma (`<slug>.listeny.app`) ou, em dev,
  * `<slug>.localhost`, devolve o slug; senão `null` (é domínio próprio).
  */
 function subdomainOf(bare: string): string | null {

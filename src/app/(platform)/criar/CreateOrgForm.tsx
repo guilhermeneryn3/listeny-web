@@ -9,7 +9,7 @@ export type TemplateOption = {
   name: string;
 };
 
-const APP_DOMAIN = process.env.NEXT_PUBLIC_EDUCATY_APP_DOMAIN ?? "educaty.app";
+const APP_DOMAIN = process.env.NEXT_PUBLIC_LISTENY_APP_DOMAIN ?? "listeny.app";
 
 /** Normaliza o que o usuário digita no campo de endereço em um slug válido. */
 function toSlug(value: string): string {

@@ -9,11 +9,11 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Educaty — Seu portal de ensino com a sua marca",
+  title: "Listeny — Seu portal de ensino com a sua marca",
   description:
     "Plataforma white-label para professores e criadores: monte seu próprio portal com logo, cores e domínio próprios. Sua marca, seus alunos.",
-  metadataBase: new URL("https://educaty.app"),
-  applicationName: "Educaty",
+  metadataBase: new URL("https://listeny.app"),
+  applicationName: "Listeny",
   authors: [{ name: "N3 Labz" }],
   category: "education",
   keywords: [
@@ -27,17 +27,17 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Educaty — Seu portal de ensino com a sua marca",
+    title: "Listeny — Seu portal de ensino com a sua marca",
     description:
       "Monte seu próprio portal de ensino com logo, cores e domínio próprios.",
-    url: "https://educaty.app",
-    siteName: "Educaty",
+    url: "https://listeny.app",
+    siteName: "Listeny",
     locale: "pt_BR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Educaty — Seu portal de ensino com a sua marca",
+    title: "Listeny — Seu portal de ensino com a sua marca",
     description:
       "Monte seu próprio portal de ensino com logo, cores e domínio próprios.",
   },

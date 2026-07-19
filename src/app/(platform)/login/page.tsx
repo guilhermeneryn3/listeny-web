@@ -37,7 +37,7 @@ function LoginForm() {
     <div className="w-full max-w-sm">
       <div className="mb-8 flex items-center justify-center gap-2 text-lg font-extrabold tracking-tight">
         <BrandMark />
-        Educaty
+        Listeny
       </div>
 
       <form

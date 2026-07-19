@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
-  Contrato de tokens do Educaty (tema CLARO padrão = template `teal-clean`).
+  Contrato de tokens do Listeny (tema CLARO padrão = template `teal-clean`).
 
   Cada token do banco vira uma variável CSS aqui via @theme inline, o que gera as
   utilities do Tailwind (bg-primary, text-ink, border-edge, …). Como são variáveis

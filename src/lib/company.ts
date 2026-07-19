@@ -1,5 +1,5 @@
 /**
- * Identidade jurídica da empresa responsável pelo Educaty.
+ * Identidade jurídica da empresa responsável pelo Listeny.
  *
  * FONTE ÚNICA — importe daqui em vez de repetir razão social/CNPJ pelo código.
  * Use nos lugares que precisarem identificar o responsável: Termos, Política de
@@ -13,10 +13,10 @@ export const COMPANY = {
   /** Nome curto / marca da holding. Sempre "N3 Labz" — "N3" sozinho é a marca incompleta. */
   shortName: "N3 Labz",
   /** Produto ao qual estes termos se referem. */
-  product: "Educaty",
+  product: "Listeny",
   /** Endereço da sede (identificação do controlador de dados na LGPD). */
   address:
     "Av. Dr. Franco da Rocha, 607, Vila Zanela, Franco da Rocha/SP, CEP 07851-000",
   /** Contato geral / assuntos de privacidade. */
-  email: "contato@educaty.app",
+  email: "contato@listeny.app",
 } as const;

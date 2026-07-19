@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * Client service-role do Supabase (projeto Educaty). **SOMENTE no servidor** — usado por
+ * Client service-role do Supabase (projeto Listeny). **SOMENTE no servidor** — usado por
  * endpoints sem sessão de usuário que precisam ignorar a RLS: webhooks de pagamento/assinatura
  * e a verificação/ativação de domínios próprios de tenant.
  *

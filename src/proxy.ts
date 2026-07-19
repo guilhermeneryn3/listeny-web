@@ -5,17 +5,17 @@ import { type NextRequest, NextResponse } from "next/server";
  * no Supabase nem em env vars (por isso a lista de hosts de plataforma é inline aqui,
  * espelhando `lib/tenant.ts`).
  *
- *  - Host de PLATAFORMA (educaty.app / www / localhost / 127.0.0.1 / *.vercel.app):
+ *  - Host de PLATAFORMA (listeny.app / www / localhost / 127.0.0.1 / *.vercel.app):
  *    landing pública em `/`, `/criar`, `/login`. Acesso direto a `/portal` é bloqueado
  *    (é a área interna do tenant).
- *  - Host de TENANT (`<slug>.educaty.app`, domínio próprio, `<slug>.localhost` em dev):
+ *  - Host de TENANT (`<slug>.listeny.app`, domínio próprio, `<slug>.localhost` em dev):
  *    reescreve tudo para dentro do grupo `(tenant)` em `/portal/*` e passa o host no
  *    header `x-tenant-host`, que o layout do tenant lê para resolver a marca.
  *
  * A resolução real do tenant (banco) fica no layout do portal (runtime Node).
  */
 const APP_DOMAIN = (
-  process.env.NEXT_PUBLIC_EDUCATY_APP_DOMAIN ?? "educaty.app"
+  process.env.NEXT_PUBLIC_LISTENY_APP_DOMAIN ?? "listeny.app"
 ).toLowerCase();
 
 function isPlatformHost(host: string): boolean {

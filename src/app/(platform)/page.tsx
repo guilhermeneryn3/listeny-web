@@ -7,7 +7,7 @@ export default function PlatformLanding() {
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2 text-lg font-extrabold tracking-tight">
           <BrandMark />
-          Educaty
+          Listeny
         </div>
         <Link
           href="/login"
@@ -29,7 +29,7 @@ export default function PlatformLanding() {
 
         <p className="mt-6 max-w-xl text-balance text-lg text-sub">
           Cada professor ou criador ganha um portal próprio: logo, cores, tema e
-          domínio seus. A Educaty é o motor — a cara é sempre a sua.
+          domínio seus. A Listeny é o motor — a cara é sempre a sua.
         </p>
 
         <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
@@ -49,7 +49,7 @@ export default function PlatformLanding() {
       </section>
 
       <footer className="mx-auto w-full max-w-5xl px-6 py-8 text-center text-sm text-hint">
-        Educaty — um produto N3 Labz.
+        Listeny — um produto N3 Labz.
       </footer>
     </main>
   );

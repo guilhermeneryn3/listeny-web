@@ -1,5 +1,5 @@
 /**
- * Símbolo da marca Educaty (capelo). Desenhado com currentColor, então herda a cor
+ * Símbolo da marca Listeny (capelo). Desenhado com currentColor, então herda a cor
  * de quem o usa — inclusive os tokens do tenant. Sem asset externo.
  */
 export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {

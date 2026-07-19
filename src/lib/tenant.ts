@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   DEFAULT_TOKENS,
   mergeTokens,
@@ -62,7 +62,9 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
   const bare = bareHost(host);
   if (!bare || isPlatformHost(bare)) return null;
 
-  const supabase = await createClient();
+  // service-role: a resolução roda só no servidor e precisa ler o org de visitante ANÔNIMO
+  // (o portal do tenant é público), sem depender da RLS de membership.
+  const supabase = createAdminClient();
 
   // 1) Descobrir o org: por slug (subdomínio) ou por domínio próprio.
   let org: TenantOrg | null = null;

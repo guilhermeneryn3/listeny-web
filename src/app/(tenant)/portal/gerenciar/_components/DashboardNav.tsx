@@ -33,6 +33,7 @@ const ITEMS: Item[] = [
   { href: "/gerenciar/alunos", label: "Alunos", icon: <Icon d="M16 19c0-2.2-1.8-4-4-4s-4 1.8-4 4M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM20 19c0-1.7-1-3-2.5-3.5M4 19c0-1.7 1-3 2.5-3.5" /> },
   { href: "/gerenciar/turmas", label: "Turmas", icon: <Icon d="M4 7h16M4 12h16M4 17h16" /> },
   { href: "/gerenciar/agenda", label: "Agenda", icon: <Icon d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" /> },
+  { href: "/gerenciar/site", label: "Site", icon: <Icon d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" /> },
   { href: "/gerenciar/aulas", label: "Aulas", icon: <Icon d="M4 5h11a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2V5Z" />, soon: true },
   { href: "/gerenciar/progresso", label: "Progresso", icon: <Icon d="M4 19V5M4 19h16M8 15v-3M12 15V9M16 15v-6" />, soon: true },
   { href: "/gerenciar/financeiro", label: "Financeiro", icon: <Icon d="M3 7h18v10H3zM3 10h18M7 14h3" />, soon: true },

@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { headers } from "next/headers";
 import { resolveTenant } from "@/lib/tenant";
 import { tokensToCssVars } from "@/lib/theme";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * Shell do TENANT. Resolve a marca pelo host da requisição (header `x-tenant-host`
@@ -34,6 +35,8 @@ export default async function TenantLayout({
   }
 
   const { org, branding, tokens } = tenant;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const style = {
     ...tokensToCssVars(tokens),
     fontFamily: "var(--font-tenant)",
@@ -58,6 +61,14 @@ export default async function TenantLayout({
           <span className="text-lg font-extrabold tracking-tight">
             {org.name}
           </span>
+          {!user && (
+            <a
+              href="/entrar"
+              className="ml-auto rounded-lg border border-edge px-3 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-primary"
+            >
+              Entrar
+            </a>
+          )}
         </div>
       </header>
 

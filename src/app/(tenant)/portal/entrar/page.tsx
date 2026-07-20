@@ -14,7 +14,7 @@ export default async function TenantLoginPage() {
 
   return (
     <main className="grid flex-1 place-items-center px-6 py-16">
-      <LoginForm defaultNext="/gerenciar" brandName={brandName} />
+      <LoginForm defaultNext="/ir" brandName={brandName} />
     </main>
   );
 }

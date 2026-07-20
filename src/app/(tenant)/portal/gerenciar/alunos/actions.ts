@@ -1,11 +1,82 @@
 "use server";
 
+import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { planLimits, withinLimit } from "@/lib/plans";
 
 export type StudentState = { ok?: boolean; error?: string };
+
+export type GrantState = {
+  error?: string;
+  tempPassword?: string; // conta nova: senha p/ repassar ao aluno
+  linked?: boolean; // vinculado a conta já existente
+};
+
+function tempPassword(): string {
+  const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  return Array.from(randomBytes(10), (b) => abc[b % abc.length]).join("");
+}
+
+/**
+ * Dá acesso ao aluno: resolve a conta pelo E-MAIL (chave global da identidade).
+ * Conta existe → só vincula (mesma pessoa, mais um contexto). Não existe → cria com senha
+ * temporária (troca no 1º login). Sempre cria/garante o membership(student) + students.user_id.
+ * Escrita via service-role, após validar o gestor.
+ */
+export async function grantStudentAccess(
+  _prev: GrantState,
+  formData: FormData,
+): Promise<GrantState> {
+  const { tenant } = await requireManager();
+  const orgId = tenant.org.id;
+  const studentId = String(formData.get("student_id") ?? "");
+  if (!studentId) return { error: "Aluno inválido." };
+
+  const supabase = await createClient();
+  const { data: student } = await supabase
+    .from("students")
+    .select("id, email, user_id")
+    .eq("id", studentId)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  if (!student) return { error: "Aluno não encontrado." };
+  if (student.user_id) return { error: "Este aluno já tem acesso." };
+  const email = (student.email ?? "").trim().toLowerCase();
+  if (!email) return { error: "Cadastre um e-mail no aluno antes de dar acesso." };
+
+  const admin = createAdminClient();
+
+  // 1) já existe conta com esse e-mail?
+  const { data: prof } = await admin.from("profiles").select("user_id").eq("email", email).maybeSingle();
+
+  let userId: string;
+  let tmp: string | undefined;
+  if (prof?.user_id) {
+    userId = prof.user_id as string;
+  } else {
+    tmp = tempPassword();
+    const { data: created, error: cErr } = await admin.auth.admin.createUser({
+      email,
+      password: tmp,
+      email_confirm: true,
+    });
+    if (cErr || !created.user) return { error: "Não foi possível criar o acesso. Tente novamente." };
+    userId = created.user.id;
+    await admin.from("profiles").update({ must_change_password: true }).eq("user_id", userId);
+  }
+
+  // 2) vincula o roster + garante o contexto (membership student)
+  await admin.from("students").update({ user_id: userId }).eq("id", studentId).eq("org_id", orgId);
+  await admin
+    .from("memberships")
+    .upsert({ org_id: orgId, user_id: userId, role: "student" }, { onConflict: "org_id,user_id" });
+
+  refresh();
+  return tmp ? { tempPassword: tmp } : { linked: true };
+}
 
 function readFields(formData: FormData) {
   return {

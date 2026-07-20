@@ -6,7 +6,9 @@ import {
   updateStudent,
   setStudentStatus,
   removeStudent,
+  grantStudentAccess,
   type StudentState,
+  type GrantState,
 } from "../actions";
 
 export type Student = {
@@ -16,7 +18,33 @@ export type Student = {
   phone: string | null;
   notes: string | null;
   status: "active" | "inactive";
+  hasAccess: boolean;
 };
+
+/** Botão "Dar acesso": cria/vincula a conta do aluno e mostra a senha de 1º acesso. */
+function GrantAccess({ studentId }: { studentId: string }) {
+  const [state, action, pending] = useActionState<GrantState, FormData>(grantStudentAccess, {});
+
+  if (state.tempPassword) {
+    return (
+      <span className="text-xs text-sub">
+        Senha de 1º acesso: <span className="font-mono font-semibold text-ink">{state.tempPassword}</span> (envie ao aluno)
+      </span>
+    );
+  }
+  if (state.linked) {
+    return <span className="text-xs text-success">Acesso vinculado à conta existente</span>;
+  }
+  return (
+    <form action={action}>
+      <input type="hidden" name="student_id" value={studentId} />
+      <button type="submit" disabled={pending} className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-primary-dark hover:bg-soft disabled:opacity-60">
+        {pending ? "…" : "Dar acesso"}
+      </button>
+      {state.error && <span className="ml-2 text-xs text-danger">{state.error}</span>}
+    </form>
+  );
+}
 
 const field =
   "w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-primary";
@@ -130,6 +158,11 @@ export function StudentsManager({ students }: { students: Student[] }) {
                         inativo
                       </span>
                     )}
+                    {s.hasAccess && (
+                      <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-dark">
+                        com acesso
+                      </span>
+                    )}
                   </div>
                   <div className="truncate text-sm text-sub">
                     {s.email ?? s.phone ?? "—"}
@@ -137,6 +170,7 @@ export function StudentsManager({ students }: { students: Student[] }) {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-1">
+                  {s.email && !s.hasAccess && s.status === "active" && <GrantAccess studentId={s.id} />}
                   <button
                     type="button"
                     onClick={() => { setEditingId(s.id); setAdding(false); }}

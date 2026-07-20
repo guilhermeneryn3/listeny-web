@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { isAdmin, type Role } from "@/lib/roles";
 import { MODULES, type ModuleKey } from "@/lib/modules";
 import { PLAN_LABEL, type Plan } from "@/lib/plans";
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * Nav do painel, montada a partir do CATÁLOGO de módulos, mostrando só os módulos do plano do
@@ -81,6 +82,18 @@ export function DashboardNav({
         <span>Ajustes</span>
         <span className="ml-auto rounded-full bg-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-hint">em breve</span>
       </span>
+
+      <button
+        type="button"
+        onClick={async () => {
+          await createClient().auth.signOut();
+          window.location.href = "/entrar";
+        }}
+        className={`${base} mt-1 text-sub hover:bg-soft hover:text-ink`}
+      >
+        <Icon d="M15 12H3M9 6l-6 6 6 6M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
+        <span>Sair</span>
+      </button>
 
       <div className="mt-3 px-3 text-xs text-hint">
         Plano: <span className="font-semibold text-sub">{PLAN_LABEL[(plan as Plan)] ?? plan}</span>

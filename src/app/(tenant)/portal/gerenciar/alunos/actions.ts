@@ -173,6 +173,22 @@ export async function removeStudent(formData: FormData): Promise<void> {
   if (!id) return;
 
   const supabase = await createClient();
+  // pega o vínculo antes de apagar o registro do roster
+  const { data: stu } = await supabase
+    .from("students").select("user_id").eq("id", id).eq("org_id", tenant.org.id).maybeSingle();
+
   await supabase.from("students").delete().eq("id", id).eq("org_id", tenant.org.id);
+
+  // remove também o acesso (membership student) deste aluno NESTE org — a conta pessoal dele
+  // continua existindo (ele pode ser aluno de outros); só perde o vínculo com esta escola.
+  const userId = (stu as { user_id?: string | null } | null)?.user_id;
+  if (userId) {
+    await createAdminClient()
+      .from("memberships")
+      .delete()
+      .eq("org_id", tenant.org.id)
+      .eq("user_id", userId)
+      .eq("role", "student");
+  }
   refresh();
 }

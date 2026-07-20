@@ -7,6 +7,11 @@ const dayFmt = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit
 const timeFmt = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" });
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" });
 const TYPE_LABEL: Record<string, string> = { lesson: "Aula", homework: "Tarefa", goal: "Meta" };
+const brl = (v: number, c: string) => {
+  try { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: c }).format(v); }
+  catch { return `R$ ${v.toFixed(2)}`; }
+};
+type Charge = { id: string; title: string; amount: number; currency: string; due_date: string | null; status: "pending" | "paid" | "canceled" };
 
 type Sess = {
   id: string; title: string; kind: "in_person" | "online";
@@ -77,6 +82,23 @@ export default async function AlunoPage() {
     });
   }
 
+  // ── Cobranças ──
+  let charges: Charge[] = [];
+  if (studentId) {
+    const { data } = await supabase
+      .from("charges")
+      .select("id, title, amount, currency, due_date, status")
+      .eq("student_id", studentId)
+      .neq("status", "canceled")
+      .order("due_date", { ascending: true, nullsFirst: false });
+    charges = (data ?? []).map((c) => ({
+      id: c.id as string, title: c.title as string, amount: Number(c.amount),
+      currency: (c.currency as string) ?? "BRL", due_date: (c.due_date as string | null) ?? null,
+      status: c.status as Charge["status"],
+    }));
+  }
+  const todayStr = new Date(now).toISOString().slice(0, 10);
+
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
@@ -127,6 +149,37 @@ export default async function AlunoPage() {
             );
           })}
         </ul>
+      )}
+
+      {/* Cobranças */}
+      {charges.length > 0 && (
+        <>
+          <h2 className="mb-2 text-sm font-semibold text-sub">Suas cobranças</h2>
+          <ul className="mb-8 flex flex-col gap-2">
+            {charges.map((c) => {
+              const overdue = c.status === "pending" && !!c.due_date && c.due_date < todayStr;
+              return (
+                <li key={c.id} className="flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-edge bg-surface p-4 shadow-sm">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-ink">{brl(c.amount, c.currency)}</span>
+                      {c.status === "paid" ? (
+                        <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-dark">paga</span>
+                      ) : overdue ? (
+                        <span className="rounded-full bg-danger px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface">vencida</span>
+                      ) : (
+                        <span className="rounded-full bg-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-hint">pendente</span>
+                      )}
+                    </div>
+                    <div className="truncate text-sm text-sub">
+                      {c.title}{c.due_date ? ` · vence ${dateFmt.format(new Date(c.due_date + "T00:00:00"))}` : ""}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
 
       {/* Agenda */}

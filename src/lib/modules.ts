@@ -25,7 +25,7 @@ export const MODULES: ModuleDef[] = [
   { key: "site", label: "Site", href: "/gerenciar/site", built: true },
   { key: "aulas", label: "Aulas", href: "/gerenciar/aulas", built: true },
   { key: "progresso", label: "Progresso", href: "/gerenciar/progresso" },
-  { key: "financeiro", label: "Financeiro", href: "/gerenciar/financeiro" },
+  { key: "financeiro", label: "Financeiro", href: "/gerenciar/financeiro", built: true },
   { key: "equipe", label: "Equipe", href: "/gerenciar/equipe", adminOnly: true, built: true },
   { key: "marketing", label: "Marketing", href: "/gerenciar/marketing" },
   { key: "rh", label: "RH", href: "/gerenciar/rh", adminOnly: true },

@@ -21,19 +21,38 @@ export type Student = {
   hasAccess: boolean;
 };
 
-/** Botão "Dar acesso": cria/vincula a conta do aluno e mostra a senha de 1º acesso. */
+function CopyBtn({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try { await navigator.clipboard.writeText(value); } catch { window.prompt("Copie a senha:", value); }
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      }}
+      className="rounded px-1.5 py-0.5 text-[11px] font-semibold text-primary-dark hover:bg-surface"
+    >
+      {copied ? "copiado!" : "copiar"}
+    </button>
+  );
+}
+
+/** Botão "Dar acesso": cria/vincula a conta do aluno e mostra a senha de 1º acesso (fixa). */
 function GrantAccess({ studentId }: { studentId: string }) {
   const [state, action, pending] = useActionState<GrantState, FormData>(grantStudentAccess, {});
 
   if (state.tempPassword) {
     return (
-      <span className="text-xs text-sub">
-        Senha de 1º acesso: <span className="font-mono font-semibold text-ink">{state.tempPassword}</span> (envie ao aluno)
+      <span className="inline-flex items-center gap-1.5 rounded-lg bg-tint px-2 py-1 text-xs">
+        <span className="text-hint">senha 1º acesso:</span>
+        <code className="font-mono text-sm font-bold text-ink">{state.tempPassword}</code>
+        <CopyBtn value={state.tempPassword} />
       </span>
     );
   }
   if (state.linked) {
-    return <span className="text-xs text-success">Acesso vinculado à conta existente</span>;
+    return <span className="text-xs font-medium text-success">acesso vinculado à conta existente</span>;
   }
   return (
     <form action={action}>
@@ -169,7 +188,7 @@ export function StudentsManager({ students }: { students: Student[] }) {
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
                   {s.email && !s.hasAccess && s.status === "active" && <GrantAccess studentId={s.id} />}
                   <button
                     type="button"

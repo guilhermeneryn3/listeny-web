@@ -74,7 +74,8 @@ export async function grantStudentAccess(
     .from("memberships")
     .upsert({ org_id: orgId, user_id: userId, role: "student" }, { onConflict: "org_id,user_id" });
 
-  refresh();
+  // NÃO revalida aqui de propósito: revalidar recarregaria a linha e sumiria com o resultado
+  // (a senha) antes de o professor copiar. O badge "com acesso" atualiza no próximo load.
   return tmp ? { tempPassword: tmp } : { linked: true };
 }
 

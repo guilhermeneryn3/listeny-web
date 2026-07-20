@@ -2,88 +2,89 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
 import { isAdmin, type Role } from "@/lib/roles";
+import { MODULES, type ModuleKey } from "@/lib/modules";
+import { PLAN_LABEL, type Plan } from "@/lib/plans";
 
 /**
- * Nav lateral do workspace do professor (adaptação web das tabs do mockup mobile). Itens de
- * sub-fases futuras entram desabilitados até chegar a vez. Hrefs "limpos" (`/gerenciar/*`) —
- * o proxy reescreve o host de tenant para `/portal/*`, mas o usePathname/URL segue limpo.
+ * Nav do painel, montada a partir do CATÁLOGO de módulos, mostrando só os módulos do plano do
+ * org (e respeitando adminOnly × papel). Início/Ajustes são fixos. Módulos do plano ainda não
+ * implementados aparecem como "em breve". Rótulo do plano no rodapé.
  */
-type Item = { href: string; label: string; icon: ReactNode; soon?: boolean; adminOnly?: boolean };
-
 function Icon({ d }: { d: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-5 w-5 shrink-0"
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 shrink-0">
       <path d={d} />
     </svg>
   );
 }
 
-const ITEMS: Item[] = [
-  { href: "/gerenciar", label: "Início", icon: <Icon d="M3 10.5 12 4l9 6.5M5 9.5V20h14V9.5" /> },
-  { href: "/gerenciar/alunos", label: "Alunos", icon: <Icon d="M16 19c0-2.2-1.8-4-4-4s-4 1.8-4 4M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM20 19c0-1.7-1-3-2.5-3.5M4 19c0-1.7 1-3 2.5-3.5" /> },
-  { href: "/gerenciar/turmas", label: "Turmas", icon: <Icon d="M4 7h16M4 12h16M4 17h16" /> },
-  { href: "/gerenciar/agenda", label: "Agenda", icon: <Icon d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" /> },
-  { href: "/gerenciar/site", label: "Site", icon: <Icon d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" /> },
-  { href: "/gerenciar/aulas", label: "Aulas", icon: <Icon d="M4 5h11a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2V5Z" />, soon: true },
-  { href: "/gerenciar/progresso", label: "Progresso", icon: <Icon d="M4 19V5M4 19h16M8 15v-3M12 15V9M16 15v-6" />, soon: true },
-  { href: "/gerenciar/financeiro", label: "Financeiro", icon: <Icon d="M3 7h18v10H3zM3 10h18M7 14h3" />, soon: true },
-  { href: "/gerenciar/equipe", label: "Equipe", icon: <Icon d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 20c0-2.8 2.7-5 6-5s6 2.2 6 5M16 5.5a3 3 0 0 1 0 6M18 20c0-1.8-.7-3.4-1.9-4.6" />, adminOnly: true },
-  { href: "/gerenciar/ajustes", label: "Ajustes", icon: <Icon d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19 12l1.5 1-1 2-1.8-.4-1.2 1.5.4 1.8-2 1-1.3-1.5-1.9.4-1.3 1.1-2-1 .4-1.8L4 13l-1.5-1 1-2 1.8.4L6.5 9l-.4-1.8 2-1L9.4 7.7 11.3 7l1.3-1.1 2 1-.4 1.8L15.4 10" />, soon: true },
-];
+const ICONS: Record<ModuleKey | "inicio" | "ajustes", string> = {
+  inicio: "M3 10.5 12 4l9 6.5M5 9.5V20h14V9.5",
+  alunos: "M16 19c0-2.2-1.8-4-4-4s-4 1.8-4 4M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM20 19c0-1.7-1-3-2.5-3.5M4 19c0-1.7 1-3 2.5-3.5",
+  turmas: "M4 7h16M4 12h16M4 17h16",
+  agenda: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",
+  site: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18",
+  aulas: "M4 5h11a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2V5Z",
+  progresso: "M4 19V5M4 19h16M8 15v-3M12 15V9M16 15v-6",
+  financeiro: "M3 7h18v10H3zM3 10h18M7 14h3",
+  equipe: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 20c0-2.8 2.7-5 6-5s6 2.2 6 5M16 5.5a3 3 0 0 1 0 6M18 20c0-1.8-.7-3.4-1.9-4.6",
+  marketing: "M3 11v2l14 5V6L3 11ZM17 8a3 3 0 0 1 0 8M6 13v5",
+  rh: "M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 17c0-1.7 1.8-3 4-3s4 1.3 4 3",
+  ajustes: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19 12l1.5 1-1 2-1.8-.4-1.2 1.5.4 1.8-2 1-1.3-1.5-1.9.4-1.3 1.1-2-1 .4-1.8L4 13l-1.5-1 1-2 1.8.4L6.5 9l-.4-1.8 2-1L9.4 7.7 11.3 7l1.3-1.1 2 1-.4 1.8L15.4 10",
+};
 
-export function DashboardNav({ role }: { role: Role }) {
+const base = "flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors";
+
+export function DashboardNav({
+  role,
+  modules,
+  plan,
+}: {
+  role: Role;
+  modules: ModuleKey[];
+  plan: string;
+}) {
   const pathname = usePathname();
-  const items = ITEMS.filter((it) => !it.adminOnly || isAdmin(role));
+  const enabled = MODULES.filter((m) => modules.includes(m.key) && (!m.adminOnly || isAdmin(role)));
+
+  const inicioActive = pathname === "/gerenciar";
 
   return (
     <nav className="flex flex-col gap-1">
-      {items.map((it) => {
-        const active =
-          it.href === "/gerenciar"
-            ? pathname === "/gerenciar"
-            : pathname.startsWith(it.href);
+      <Link href="/gerenciar" className={`${base} ${inicioActive ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
+        <Icon d={ICONS.inicio} />
+        <span>Início</span>
+      </Link>
 
-        if (it.soon) {
+      {enabled.map((m) => {
+        if (!m.built) {
           return (
-            <span
-              key={it.href}
-              className="flex cursor-default items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium text-hint"
-              aria-disabled
-            >
-              {it.icon}
-              <span>{it.label}</span>
-              <span className="ml-auto rounded-full bg-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-hint">
-                em breve
-              </span>
+            <span key={m.key} className={`${base} cursor-default text-hint`} aria-disabled>
+              <Icon d={ICONS[m.key]} />
+              <span>{m.label}</span>
+              <span className="ml-auto rounded-full bg-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-hint">em breve</span>
             </span>
           );
         }
-
+        const active = pathname.startsWith(m.href);
         return (
-          <Link
-            key={it.href}
-            href={it.href}
-            className={`flex items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-sm font-medium transition-colors ${
-              active
-                ? "bg-tint text-primary-dark"
-                : "text-sub hover:bg-soft hover:text-ink"
-            }`}
-          >
-            {it.icon}
-            <span>{it.label}</span>
+          <Link key={m.key} href={m.href} className={`${base} ${active ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
+            <Icon d={ICONS[m.key]} />
+            <span>{m.label}</span>
           </Link>
         );
       })}
+
+      <span className={`${base} cursor-default text-hint`} aria-disabled>
+        <Icon d={ICONS.ajustes} />
+        <span>Ajustes</span>
+        <span className="ml-auto rounded-full bg-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-hint">em breve</span>
+      </span>
+
+      <div className="mt-3 px-3 text-xs text-hint">
+        Plano: <span className="font-semibold text-sub">{PLAN_LABEL[(plan as Plan)] ?? plan}</span>
+      </div>
     </nav>
   );
 }

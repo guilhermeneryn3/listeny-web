@@ -1,11 +1,14 @@
 import { requireManager } from "@/lib/teacher";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdmin, type Role } from "@/lib/roles";
+import { ModuleLocked } from "@/components/ModuleLocked";
 import { TeamManager, type Member, type Invite } from "./_components/TeamManager";
 
 /** Quadro de colaboradores + convites. Só admin (dono/diretor). Nomes/e-mails via service-role. */
 export default async function EquipePage() {
-  const { tenant, role } = await requireManager();
+  const { tenant, role, modules } = await requireManager();
+
+  if (!modules.includes("equipe")) return <ModuleLocked moduleKey="equipe" />;
 
   if (!isAdmin(role)) {
     return (

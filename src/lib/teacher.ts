@@ -3,11 +3,14 @@ import { redirect } from "next/navigation";
 import { resolveTenant, type Tenant } from "@/lib/tenant";
 import { createClient } from "@/lib/supabase/server";
 import { MANAGER_ROLES, type Role } from "@/lib/roles";
+import { planModules, type ModuleKey } from "@/lib/modules";
 
 export type ManagerContext = {
   tenant: Tenant;
   userId: string;
   role: Role;
+  plan: string;
+  modules: ModuleKey[];
 };
 
 /**
@@ -28,8 +31,11 @@ export async function requireManager(): Promise<ManagerContext> {
   } = await supabase.auth.getUser();
   if (!user) redirect("/entrar?next=/gerenciar");
 
+  const plan = tenant.org.plan;
+  const modules = planModules(plan);
+
   if (tenant.org.owner_id === user.id) {
-    return { tenant, userId: user.id, role: "owner" };
+    return { tenant, userId: user.id, role: "owner", plan, modules };
   }
 
   const { data: mem } = await supabase
@@ -40,7 +46,7 @@ export async function requireManager(): Promise<ManagerContext> {
     .maybeSingle();
   const role = (mem as { role?: Role } | null)?.role;
   if (role && MANAGER_ROLES.includes(role)) {
-    return { tenant, userId: user.id, role };
+    return { tenant, userId: user.id, role, plan, modules };
   }
 
   redirect("/sem-acesso");

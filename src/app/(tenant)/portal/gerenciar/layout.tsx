@@ -12,7 +12,7 @@ export default async function GerenciarLayout({
 }: {
   children: ReactNode;
 }) {
-  const { tenant, role } = await requireManager();
+  const { tenant, role, plan, modules } = await requireManager();
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 gap-6 px-4 py-6 sm:px-6">
@@ -20,7 +20,7 @@ export default async function GerenciarLayout({
         <div className="mb-3 px-3 text-xs font-semibold uppercase tracking-wide text-hint">
           {tenant.org.name}
         </div>
-        <DashboardNav role={role} />
+        <DashboardNav role={role} modules={modules} plan={plan} />
       </aside>
       <main className="min-w-0 flex-1">{children}</main>
     </div>

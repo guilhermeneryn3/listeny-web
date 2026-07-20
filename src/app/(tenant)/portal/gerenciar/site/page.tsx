@@ -1,6 +1,8 @@
 import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { SiteEditor, type Site, type Offering } from "./_components/SiteEditor";
+import { DomainManager, type Domain } from "./_components/DomainManager";
 
 const EMPTY_SITE: Site = {
   published: false,
@@ -10,9 +12,11 @@ const EMPTY_SITE: Site = {
   instagram: null, youtube: null, tiktok: null, facebook: null,
 };
 
-/** Editor do site público do tenant. */
+const APP_DOMAIN = process.env.NEXT_PUBLIC_LISTENY_APP_DOMAIN ?? "listeny.app";
+
+/** Editor do site público do tenant (+ domínio próprio, só dono). */
 export default async function SitePage() {
-  const { tenant } = await requireManager();
+  const { tenant, role } = await requireManager();
   const supabase = await createClient();
   const orgId = tenant.org.id;
 
@@ -30,10 +34,25 @@ export default async function SitePage() {
       .order("created_at"),
   ]);
 
+  let domains: Domain[] = [];
+  if (role === "owner") {
+    const { data } = await createAdminClient()
+      .from("org_domains")
+      .select("id, hostname, is_primary, status, ssl_status")
+      .eq("org_id", orgId)
+      .order("created_at");
+    domains = (data ?? []) as Domain[];
+  }
+
   return (
-    <SiteEditor
-      site={(site as Site | null) ?? EMPTY_SITE}
-      offerings={(offs ?? []) as Offering[]}
-    />
+    <div className="space-y-4">
+      <SiteEditor
+        site={(site as Site | null) ?? EMPTY_SITE}
+        offerings={(offs ?? []) as Offering[]}
+      />
+      {role === "owner" && (
+        <DomainManager domains={domains} slug={tenant.org.slug} appDomain={APP_DOMAIN} />
+      )}
+    </div>
   );
 }

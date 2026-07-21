@@ -20,8 +20,9 @@ function Icon({ d }: { d: string }) {
   );
 }
 
-const ICONS: Record<ModuleKey | "inicio" | "ajustes", string> = {
+const ICONS: Record<ModuleKey | "inicio" | "ajustes" | "loja", string> = {
   inicio: "M3 10.5 12 4l9 6.5M5 9.5V20h14V9.5",
+  loja: "M4 9h16l-1-4H5L4 9ZM4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M9 20v-6h6v6",
   alunos: "M16 19c0-2.2-1.8-4-4-4s-4 1.8-4 4M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM20 19c0-1.7-1-3-2.5-3.5M4 19c0-1.7 1-3 2.5-3.5",
   turmas: "M4 7h16M4 12h16M4 17h16",
   agenda: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",
@@ -77,6 +78,13 @@ export function DashboardNav({
           </Link>
         );
       })}
+
+      {isAdmin(role) && (
+        <Link href="/gerenciar/loja" className={`${base} ${pathname.startsWith("/gerenciar/loja") ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
+          <Icon d={ICONS.loja} />
+          <span>Loja</span>
+        </Link>
+      )}
 
       <Link href="/gerenciar/ajustes" className={`${base} ${pathname.startsWith("/gerenciar/ajustes") ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
         <Icon d={ICONS.ajustes} />

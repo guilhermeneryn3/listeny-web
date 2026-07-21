@@ -34,10 +34,8 @@ export async function requireManager(): Promise<ManagerContext> {
   const plan = tenant.org.plan;
   const { data: om } = await supabase
     .from("org_modules").select("module_key, enabled").eq("org_id", tenant.org.id);
-  const disabled = new Set(
-    (om ?? []).filter((m) => m.enabled === false).map((m) => m.module_key as string),
-  );
-  const modules = effectiveModules(plan, disabled);
+  const rows = (om ?? []) as { module_key: string; enabled: boolean }[];
+  const modules = effectiveModules(plan, rows);
 
   if (tenant.org.owner_id === user.id) {
     return { tenant, userId: user.id, role: "owner", plan, modules };

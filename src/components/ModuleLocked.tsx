@@ -1,23 +1,21 @@
-import { moduleLabel, firstPlanWith, type ModuleKey } from "@/lib/modules";
-import { PLAN_LABEL, type Plan } from "@/lib/plans";
+import { moduleLabel, modulePrice, type ModuleKey } from "@/lib/modules";
 
-/** Tela mostrada quando o módulo não está no plano do org (gate de rota + gancho de upgrade). */
+/** Tela mostrada quando o módulo não está ativo no org (gate de rota + gancho pra Loja). */
 export function ModuleLocked({ moduleKey }: { moduleKey: ModuleKey }) {
-  const plan = firstPlanWith(moduleKey);
+  const price = modulePrice(moduleKey);
   return (
     <div className="rounded-[var(--radius)] border border-dashed border-edge bg-soft p-10 text-center">
       <h1 className="text-xl font-extrabold tracking-tight text-ink">
-        {moduleLabel(moduleKey)} não está no seu plano
+        {moduleLabel(moduleKey)} não está ativo
       </h1>
       <p className="mx-auto mt-2 max-w-md text-sm text-sub">
-        Este recurso fica disponível a partir do plano{" "}
-        <span className="font-semibold text-ink">{plan ? PLAN_LABEL[plan as Plan] : "—"}</span>.
+        Instale este módulo na Loja{price > 0 ? ` por R$ ${price}/mês` : ""} para começar a usar.
       </p>
       <a
-        href="/gerenciar"
+        href="/gerenciar/loja"
         className="mt-6 inline-flex rounded-[var(--radius)] bg-primary px-5 py-2.5 text-sm font-semibold text-surface transition-colors hover:bg-primary-dark"
       >
-        Voltar ao painel
+        Ir para a Loja
       </a>
     </div>
   );

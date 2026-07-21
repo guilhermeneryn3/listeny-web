@@ -13,6 +13,20 @@ export const PLAN_LABEL: Record<Plan, string> = {
   enterprise: "Enterprise",
 };
 
+/** Preço-base mensal do plano (R$). `null` = sob consulta. Placeholder, tunável no código. */
+export const PLAN_PRICE: Record<Plan, number | null> = {
+  free: 0,
+  basico: 49,
+  intermediario: 99,
+  premium: 199,
+  enterprise: null,
+};
+
+export function planPrice(plan: string | null | undefined): number | null {
+  const p = (plan as Plan) ?? "free";
+  return p in PLAN_PRICE ? PLAN_PRICE[p] : PLAN_PRICE.free;
+}
+
 export type PlanLimits = {
   maxStudents: number | null;
   maxStaff: number | null;

@@ -27,25 +27,61 @@ export type ModuleDef = {
   href: string;
   category: ModuleCategory;
   price: number; // R$/mês quando é add-on (nativo = 0). Placeholder, tunável.
-  description: string;
+  description: string; // frase curta (card da loja)
+  icon: string; // path SVG (stroke) para o ícone na loja
+  details?: string; // descrição longa (página do módulo)
+  features?: string[]; // destaques (bullets na página do módulo)
   adminOnly?: boolean; // só dono/diretor (ex.: equipe, rh)
   built?: boolean; // já implementado (senão aparece como "em breve", não instalável)
   capability?: boolean; // liga uma CAPACIDADE (ex.: área do aluno), não é tela no menu do painel
 };
 
 export const MODULES: ModuleDef[] = [
-  { key: "alunos", label: "Alunos", href: "/painel/alunos", category: "nativo", price: 0, description: "Cadastro e gestão dos seus alunos.", built: true },
-  { key: "turmas", label: "Turmas", href: "/painel/turmas", category: "nativo", price: 0, description: "Organize alunos em turmas.", built: true },
-  { key: "agenda", label: "Agenda", href: "/painel/agenda", category: "nativo", price: 0, description: "Agenda de sessões e agendamento pelos alunos.", built: true },
-  { key: "site", label: "Site", href: "/painel/site", category: "nativo", price: 0, description: "Seu site e domínio próprio.", built: true },
-  { key: "aulas", label: "Aulas", href: "/painel/aulas", category: "modulo", price: 19, description: "Publique aulas e materiais para os alunos.", built: true },
-  { key: "eventos", label: "Eventos", href: "/painel/eventos", category: "modulo", price: 19, description: "Calendário público: excursões, reuniões, avisos.", built: true },
-  { key: "financeiro", label: "Financeiro", href: "/painel/financeiro", category: "modulo", price: 29, description: "Cobranças e controle financeiro dos alunos.", built: true },
-  { key: "equipe", label: "Equipe", href: "/painel/equipe", category: "modulo", price: 19, description: "Convide e gerencie sua equipe.", adminOnly: true, built: true },
-  { key: "portal-aluno", label: "Portal do Aluno", href: "/aluno", category: "modulo", price: 29, description: "Área logada onde o aluno acessa aulas, cobranças e agenda.", built: true, capability: true },
-  { key: "progresso", label: "Progresso", href: "/painel/progresso", category: "modulo", price: 19, description: "Boletim e acompanhamento de evolução." },
-  { key: "marketing", label: "Marketing", href: "/painel/marketing", category: "modulo", price: 39, description: "Captação de leads e campanhas." },
-  { key: "rh", label: "RH", href: "/painel/rh", category: "modulo", price: 49, description: "Gestão de pessoas para instituições.", adminOnly: true },
+  { key: "alunos", label: "Alunos", href: "/painel/alunos", category: "nativo", price: 0, description: "Cadastro e gestão dos seus alunos.", built: true,
+    icon: "M16 19c0-2.2-1.8-4-4-4s-4 1.8-4 4M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM20 19c0-1.7-1-3-2.5-3.5M4 19c0-1.7 1-3 2.5-3.5",
+    details: "O coração do portal: cadastre seus alunos, guarde contatos e observações e conceda acesso à área do aluno quando quiser.",
+    features: ["Cadastro com contato e notas", "Status ativo/inativo", "Concede acesso à área do aluno"] },
+  { key: "turmas", label: "Turmas", href: "/painel/turmas", category: "nativo", price: 0, description: "Organize alunos em turmas.", built: true,
+    icon: "M4 7h16M4 12h16M4 17h16",
+    details: "Agrupe alunos em turmas para organizar aulas, agenda e comunicação.",
+    features: ["Crie quantas turmas quiser", "Vincule alunos às turmas", "Base para agenda e aulas"] },
+  { key: "agenda", label: "Agenda", href: "/painel/agenda", category: "nativo", price: 0, description: "Sessões e agendamento pelos alunos.", built: true,
+    icon: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",
+    details: "Organize suas sessões presenciais e online e, se quiser, deixe o aluno reservar horários disponíveis.",
+    features: ["Sessões presenciais e online", "Agendamento pelo aluno (opt-in)", "Calendário mensal"] },
+  { key: "site", label: "Site", href: "/painel/site", category: "nativo", price: 0, description: "Seu site e domínio próprio.", built: true,
+    icon: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18",
+    details: "Seu site profissional com domínio próprio, gerenciado em submódulos: Páginas, Aparência, Ofertas, Redes e mais.",
+    features: ["Seções liga/desliga", "Tema, logo e cor", "Domínio próprio"] },
+  { key: "aulas", label: "Aulas", href: "/painel/aulas", category: "modulo", price: 19, description: "Publique aulas e materiais.", built: true,
+    icon: "M4 5h11a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2V5Z",
+    details: "Publique aulas, tarefas e materiais e acompanhe a conclusão de cada aluno.",
+    features: ["Aulas, tarefas e metas", "Materiais por link", "Aluno marca como concluído"] },
+  { key: "eventos", label: "Eventos", href: "/painel/eventos", category: "modulo", price: 19, description: "Calendário público de eventos.", built: true,
+    icon: "M12 3l2.4 5 5.6.6-4 4 1 5.4-5-2.7-5 2.7 1-5.4-4-4 5.6-.6z",
+    details: "Calendário de excursões, reuniões e avisos. Eventos públicos aparecem no site e na área do aluno.",
+    features: ["Eventos públicos ou internos", "Calendário mensal", "Aparece no site"] },
+  { key: "financeiro", label: "Financeiro", href: "/painel/financeiro", category: "modulo", price: 29, description: "Cobranças e controle financeiro.", built: true,
+    icon: "M3 7h18v10H3zM3 10h18M7 14h3",
+    details: "Crie cobranças por aluno e acompanhe o status de pagamento, com um resumo do que há a receber.",
+    features: ["Cobranças por aluno", "Status pago/pendente/vencido", "Resumo a receber"] },
+  { key: "equipe", label: "Equipe", href: "/painel/equipe", category: "modulo", price: 19, description: "Convide e gerencie sua equipe.", adminOnly: true, built: true,
+    icon: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 20c0-2.8 2.7-5 6-5s6 2.2 6 5M16 5.5a3 3 0 0 1 0 6M18 20c0-1.8-.7-3.4-1.9-4.6",
+    details: "Convide diretores, coordenadores e professores com papéis e permissões próprias.",
+    features: ["Convite por e-mail", "Papéis por pessoa", "Aceite sem perder outros acessos"] },
+  { key: "portal-aluno", label: "Portal do Aluno", href: "/aluno", category: "modulo", price: 29, description: "Área logada do aluno.", built: true, capability: true,
+    icon: "M16 19c0-2.2-1.8-4-4-4s-4 1.8-4 4M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z",
+    details: "A área logada onde o aluno acessa aulas, cobranças, agenda e eventos. Sem este módulo, o aluno não entra no portal.",
+    features: ["Área logada do aluno", "Aulas, cobranças e agenda", "Agendamento (se ligado)"] },
+  { key: "progresso", label: "Progresso", href: "/painel/progresso", category: "modulo", price: 19, description: "Boletim e evolução dos alunos.",
+    icon: "M4 19V5M4 19h16M8 15v-3M12 15V9M16 15v-6",
+    details: "Boletim e acompanhamento de evolução dos alunos. Em desenvolvimento." },
+  { key: "marketing", label: "Marketing", href: "/painel/marketing", category: "modulo", price: 39, description: "Captação de leads e campanhas.",
+    icon: "M3 11v2l14 5V6L3 11ZM17 8a3 3 0 0 1 0 8M6 13v5",
+    details: "Captação de leads e campanhas para atrair mais alunos. Em desenvolvimento." },
+  { key: "rh", label: "RH", href: "/painel/rh", category: "modulo", price: 49, description: "Gestão de pessoas (instituições).", adminOnly: true,
+    icon: "M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 17c0-1.7 1.8-3 4-3s4 1.3 4 3",
+    details: "Gestão de pessoas para instituições de ensino. Em desenvolvimento." },
 ];
 
 /** Profissões/verticais instaláveis (etiqueta de segmento na v1). Você cria cada uma aqui. */
@@ -57,14 +93,29 @@ export type ProfessionDef = {
   label: string;
   price: number; // R$/mês (placeholder, tunável)
   description: string;
+  icon: string;
+  details?: string;
+  features?: string[];
 };
 
+const PROFESSION_FEATURES = ["Marca o segmento do seu portal", "Base para personalização futura", "Instalação reversível"];
+
 export const PROFESSIONS: ProfessionDef[] = [
-  { key: "personal", label: "Personal Trainer", price: 19, description: "Perfil para treinadores e educação física." },
-  { key: "musica", label: "Música", price: 19, description: "Perfil para professores de música e instrumentos." },
-  { key: "artes-marciais", label: "Artes Marciais", price: 19, description: "Perfil para academias e mestres de luta." },
-  { key: "reforco-escolar", label: "Reforço Escolar", price: 19, description: "Perfil para reforço e aulas de apoio." },
-  { key: "desenho", label: "Desenho", price: 19, description: "Perfil para professores de desenho e artes visuais." },
+  { key: "personal", label: "Personal Trainer", price: 19, description: "Perfil para treinadores e educação física.",
+    icon: "M4 9v6M20 9v6M6 12h12M8 7v10M16 7v10",
+    details: "Perfil para personal trainers e educação física — marca a área de atuação do portal, base para termos e campos próprios no futuro.", features: PROFESSION_FEATURES },
+  { key: "musica", label: "Música", price: 19, description: "Perfil para professores de música e instrumentos.",
+    icon: "M9 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM9 15V5l10-2v10",
+    details: "Perfil para professores de música e instrumentos — marca a área de atuação do portal.", features: PROFESSION_FEATURES },
+  { key: "artes-marciais", label: "Artes Marciais", price: 19, description: "Perfil para academias e mestres de luta.",
+    icon: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z",
+    details: "Perfil para academias e mestres de artes marciais — marca a área de atuação do portal.", features: PROFESSION_FEATURES },
+  { key: "reforco-escolar", label: "Reforço Escolar", price: 19, description: "Perfil para reforço e aulas de apoio.",
+    icon: "M4 5h11a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2V5Z",
+    details: "Perfil para reforço escolar e aulas de apoio — marca a área de atuação do portal.", features: PROFESSION_FEATURES },
+  { key: "desenho", label: "Desenho", price: 19, description: "Perfil para professores de desenho e artes visuais.",
+    icon: "M4 20l4-1L18 9l-3-3L5 16zM14 6l3 3",
+    details: "Perfil para professores de desenho e artes visuais — marca a área de atuação do portal.", features: PROFESSION_FEATURES },
 ];
 
 /** Mapa plano→módulos INCLUÍDOS (grátis dentro do plano). Nativos vêm em todos por padrão. */
@@ -147,4 +198,40 @@ export function moduleLabel(key: ModuleKey): string {
 }
 export function modulePrice(key: ModuleKey): number {
   return moduleDef(key)?.price ?? 0;
+}
+
+/** Item normalizado da loja (módulo OU profissão) — usado pela página de detalhe `/painel/loja/[key]`. */
+export type StoreEntry = {
+  kind: "module" | "profession";
+  key: string;
+  label: string;
+  description: string;
+  details?: string;
+  features?: string[];
+  icon: string;
+  price: number;
+  adminOnly: boolean;
+  built: boolean;
+  capability: boolean;
+  category: ModuleCategory | "profissao";
+};
+
+export function storeEntry(key: string): StoreEntry | undefined {
+  const m = moduleDef(key);
+  if (m) {
+    return {
+      kind: "module", key: m.key, label: m.label, description: m.description, details: m.details,
+      features: m.features, icon: m.icon, price: m.price, adminOnly: !!m.adminOnly, built: !!m.built,
+      capability: !!m.capability, category: m.category,
+    };
+  }
+  const p = professionDef(key);
+  if (p) {
+    return {
+      kind: "profession", key: p.key, label: p.label, description: p.description, details: p.details,
+      features: p.features, icon: p.icon, price: p.price, adminOnly: false, built: true,
+      capability: false, category: "profissao",
+    };
+  }
+  return undefined;
 }

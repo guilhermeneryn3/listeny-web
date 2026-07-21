@@ -1,8 +1,13 @@
 import type { ReactNode } from "react";
+import { requireManager } from "@/lib/teacher";
+import { ModuleLocked } from "@/components/ModuleLocked";
 import { SiteNav } from "./_components/SiteNav";
 
-/** Shell do módulo Site: título + sub-navegação (submódulos) à esquerda + conteúdo. */
-export default function SiteLayout({ children }: { children: ReactNode }) {
+/** Shell do módulo Site: título + sub-navegação (submódulos). Gateado pelo módulo "site". */
+export default async function SiteLayout({ children }: { children: ReactNode }) {
+  const { modules } = await requireManager();
+  if (!modules.includes("site")) return <ModuleLocked moduleKey="site" />;
+
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">

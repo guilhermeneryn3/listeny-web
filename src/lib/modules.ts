@@ -49,7 +49,7 @@ export const MODULES: ModuleDef[] = [
     icon: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",
     details: "Organize suas sessões presenciais e online e, se quiser, deixe o aluno reservar horários disponíveis.",
     features: ["Sessões presenciais e online", "Agendamento pelo aluno (opt-in)", "Calendário mensal"] },
-  { key: "site", label: "Site", href: "/painel/site", category: "nativo", price: 0, description: "Seu site e domínio próprio.", built: true,
+  { key: "site", label: "Site", href: "/painel/site", category: "modulo", price: 29, description: "Seu site e domínio próprio.", built: true,
     icon: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18",
     details: "Seu site profissional com domínio próprio, gerenciado em submódulos: Páginas, Aparência, Ofertas, Redes e mais.",
     features: ["Seções liga/desliga", "Tema, logo e cor", "Domínio próprio"] },
@@ -120,8 +120,8 @@ export const PROFESSIONS: ProfessionDef[] = [
 
 /** Mapa plano→módulos INCLUÍDOS (grátis dentro do plano). Nativos vêm em todos por padrão. */
 export const PLAN_MODULES: Record<Plan, ModuleKey[]> = {
-  free: ["alunos", "turmas", "agenda", "site"],
-  basico: ["alunos", "turmas", "agenda", "site", "aulas"],
+  free: ["alunos", "turmas", "agenda"],
+  basico: ["alunos", "turmas", "agenda", "aulas"],
   intermediario: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "eventos", "portal-aluno"],
   premium: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "eventos", "portal-aluno"],
   enterprise: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "rh", "eventos", "portal-aluno"],

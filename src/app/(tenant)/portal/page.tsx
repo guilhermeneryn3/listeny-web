@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { resolveTenant } from "@/lib/tenant";
 import { createClient } from "@/lib/supabase/server";
+import { effectiveModules, type OrgModuleRow } from "@/lib/modules";
 
 type SiteRow = {
   published: boolean;
@@ -54,7 +55,7 @@ export default async function TenantHome() {
 
   const { org } = tenant;
   const supabase = await createClient();
-  const [{ data: siteData }, { data: offs }] = await Promise.all([
+  const [{ data: siteData }, { data: offs }, { data: om }] = await Promise.all([
     supabase.from("org_site").select("*").eq("org_id", org.id).maybeSingle(),
     supabase
       .from("site_offerings")
@@ -63,12 +64,14 @@ export default async function TenantHome() {
       .eq("active", true)
       .order("position")
       .order("created_at"),
+    supabase.from("org_modules").select("module_key, enabled").eq("org_id", org.id),
   ]);
   const site = siteData as SiteRow | null;
   const offerings = (offs ?? []) as OfferingRow[];
+  const siteActive = effectiveModules(org.plan, (om ?? []) as OrgModuleRow[]).includes("site");
 
-  // Site não publicado → aviso discreto.
-  if (!site?.published) {
+  // Sem o módulo Site, ou site não publicado → aviso discreto.
+  if (!siteActive || !site?.published) {
     return (
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-6 py-24 text-center">
         <span className="mb-6 inline-flex items-center rounded-full bg-tint px-4 py-1.5 text-sm font-semibold text-primary-dark">

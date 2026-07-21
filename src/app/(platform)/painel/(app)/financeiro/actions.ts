@@ -8,8 +8,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export type ChargeState = { ok?: boolean; error?: string };
 
 function refresh() {
-  revalidatePath("/gerenciar/financeiro");
-  revalidatePath("/gerenciar");
+  revalidatePath("/painel/financeiro");
+  revalidatePath("/painel/inicio");
 }
 
 function parseAmount(v: FormDataEntryValue | null): number | null {

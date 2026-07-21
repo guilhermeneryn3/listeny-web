@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 export type SiteState = { ok?: boolean; error?: string };
 
 function refresh() {
-  revalidatePath("/gerenciar/site");
+  revalidatePath("/painel/site");
   revalidatePath("/"); // o site público
 }
 

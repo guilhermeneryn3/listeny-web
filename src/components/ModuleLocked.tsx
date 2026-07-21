@@ -12,7 +12,7 @@ export function ModuleLocked({ moduleKey }: { moduleKey: ModuleKey }) {
         Instale este módulo na Loja{price > 0 ? ` por R$ ${price}/mês` : ""} para começar a usar.
       </p>
       <a
-        href="/gerenciar/loja"
+        href="/painel/loja"
         className="mt-6 inline-flex rounded-[var(--radius)] bg-primary px-5 py-2.5 text-sm font-semibold text-surface transition-colors hover:bg-primary-dark"
       >
         Ir para a Loja

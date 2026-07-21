@@ -34,7 +34,7 @@ export async function createInvitation(
   });
   if (error) return { error: "Não foi possível criar o convite." };
 
-  revalidatePath("/gerenciar/equipe");
+  revalidatePath("/painel/equipe");
   return { ok: true };
 }
 
@@ -47,5 +47,5 @@ export async function cancelInvitation(formData: FormData): Promise<void> {
 
   const supabase = await createClient();
   await supabase.from("invitations").delete().eq("id", id).eq("org_id", tenant.org.id);
-  revalidatePath("/gerenciar/equipe");
+  revalidatePath("/painel/equipe");
 }

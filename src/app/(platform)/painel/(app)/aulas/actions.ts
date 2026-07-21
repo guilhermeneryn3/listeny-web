@@ -8,8 +8,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export type LessonState = { ok?: boolean; error?: string };
 
 function refresh() {
-  revalidatePath("/gerenciar/aulas");
-  revalidatePath("/gerenciar");
+  revalidatePath("/painel/aulas");
+  revalidatePath("/painel/inicio");
 }
 
 type Fields = {

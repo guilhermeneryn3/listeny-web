@@ -36,7 +36,7 @@ export default async function GerenciarHome() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Link
-          href="/gerenciar/alunos"
+          href="/painel/alunos"
           className="rounded-[var(--radius)] border border-edge bg-surface p-5 shadow-sm transition-colors hover:border-primary"
         >
           <div className="text-3xl font-extrabold text-ink">{nAlunos}</div>
@@ -46,7 +46,7 @@ export default async function GerenciarHome() {
         </Link>
 
         <Link
-          href="/gerenciar/turmas"
+          href="/painel/turmas"
           className="rounded-[var(--radius)] border border-edge bg-surface p-5 shadow-sm transition-colors hover:border-primary"
         >
           <div className="text-3xl font-extrabold text-ink">{nTurmas}</div>
@@ -62,7 +62,7 @@ export default async function GerenciarHome() {
             Comece trazendo seus alunos para o Listeny.
           </p>
           <Link
-            href="/gerenciar/alunos"
+            href="/painel/alunos"
             className="mt-4 inline-flex rounded-[var(--radius)] bg-primary px-5 py-2.5 text-sm font-semibold text-surface transition-colors hover:bg-primary-dark"
           >
             Adicionar aluno

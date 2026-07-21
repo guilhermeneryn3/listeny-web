@@ -3,8 +3,9 @@ import { resolveTenant } from "@/lib/tenant";
 import { LoginForm } from "@/components/LoginForm";
 
 /**
- * Login do PROFESSOR no subdomínio do tenant (cookie de sessão é por host). Após entrar,
- * segue para `/gerenciar`. A marca já vem do shell do tenant (portal/layout).
+ * Login no subdomínio do tenant (cookie de sessão é por host) — a porta do ALUNO. Após entrar,
+ * segue para `/ir`, que despacha por papel (aluno → /aluno; gestor → console na plataforma).
+ * A marca já vem do shell do tenant (portal/layout).
  */
 export default async function TenantLoginPage() {
   const h = await headers();

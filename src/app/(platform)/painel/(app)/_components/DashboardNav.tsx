@@ -51,11 +51,11 @@ export function DashboardNav({
   const pathname = usePathname();
   const enabled = MODULES.filter((m) => modules.includes(m.key) && (!m.adminOnly || isAdmin(role)));
 
-  const inicioActive = pathname === "/gerenciar";
+  const inicioActive = pathname === "/painel/inicio";
 
   return (
     <nav className="flex flex-col gap-1">
-      <Link href="/gerenciar" className={`${base} ${inicioActive ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
+      <Link href="/painel/inicio" className={`${base} ${inicioActive ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
         <Icon d={ICONS.inicio} />
         <span>Início</span>
       </Link>
@@ -80,13 +80,13 @@ export function DashboardNav({
       })}
 
       {isAdmin(role) && (
-        <Link href="/gerenciar/loja" className={`${base} ${pathname.startsWith("/gerenciar/loja") ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
+        <Link href="/painel/loja" className={`${base} ${pathname.startsWith("/painel/loja") ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
           <Icon d={ICONS.loja} />
           <span>Loja</span>
         </Link>
       )}
 
-      <Link href="/gerenciar/ajustes" className={`${base} ${pathname.startsWith("/gerenciar/ajustes") ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
+      <Link href="/painel/ajustes" className={`${base} ${pathname.startsWith("/painel/ajustes") ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
         <Icon d={ICONS.ajustes} />
         <span>Ajustes</span>
       </Link>
@@ -95,7 +95,7 @@ export function DashboardNav({
         type="button"
         onClick={async () => {
           await createClient().auth.signOut();
-          window.location.href = "/entrar";
+          window.location.href = "/login";
         }}
         className={`${base} mt-1 text-sub hover:bg-soft hover:text-ink`}
       >

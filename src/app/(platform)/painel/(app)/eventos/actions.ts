@@ -9,7 +9,7 @@ export type EventState = { ok?: boolean; error?: string };
 const TYPES = ["excursao", "reuniao", "evento", "feriado", "aviso"];
 
 function refresh() {
-  revalidatePath("/gerenciar/eventos");
+  revalidatePath("/painel/eventos");
   revalidatePath("/calendario");
 }
 

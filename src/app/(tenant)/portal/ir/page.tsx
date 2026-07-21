@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { resolveTenant } from "@/lib/tenant";
 import { createClient } from "@/lib/supabase/server";
 import { MANAGER_ROLES, type Role } from "@/lib/roles";
+import { consoleUrl } from "@/lib/urls";
 
 /**
  * Despachante de login (o "elevador do prédio"): manda cada pessoa pro lugar certo NESTE org,
@@ -11,6 +12,7 @@ import { MANAGER_ROLES, type Role } from "@/lib/roles";
 export default async function IrPage() {
   const h = await headers();
   const host = h.get("x-tenant-host") ?? h.get("host") ?? "";
+  const rawHost = h.get("host") ?? host; // com porta, p/ a URL do console (cross-host)
   const tenant = await resolveTenant(host);
   if (!tenant) redirect("/");
 
@@ -22,12 +24,13 @@ export default async function IrPage() {
     .from("profiles").select("must_change_password").eq("user_id", user.id).maybeSingle();
   if (prof?.must_change_password) redirect("/trocar-senha");
 
-  if (tenant.org.owner_id === user.id) redirect("/gerenciar");
+  // Gestor → console central na plataforma (cross-host). Aluno → área do aluno no subdomínio.
+  if (tenant.org.owner_id === user.id) redirect(consoleUrl(rawHost));
 
   const { data: mem } = await supabase
     .from("memberships").select("role").eq("org_id", tenant.org.id).eq("user_id", user.id).maybeSingle();
   const role = (mem as { role?: Role } | null)?.role;
-  if (role && MANAGER_ROLES.includes(role)) redirect("/gerenciar");
+  if (role && MANAGER_ROLES.includes(role)) redirect(consoleUrl(rawHost));
   if (role === "student") redirect("/aluno");
 
   // segurança: aluno vinculado sem membership ainda

@@ -21,6 +21,6 @@ export async function installItem(formData: FormData): Promise<void> {
   await supabase
     .from("org_modules")
     .upsert({ org_id: tenant.org.id, module_key: key, enabled: on }, { onConflict: "org_id,module_key" });
-  revalidatePath("/gerenciar/loja");
-  revalidatePath("/gerenciar", "layout");
+  revalidatePath("/painel/loja");
+  revalidatePath("/painel/loja", "layout");
 }

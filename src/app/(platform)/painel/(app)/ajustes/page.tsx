@@ -13,7 +13,7 @@ export default async function AjustesPage() {
       <h2 className="mb-3 mt-6 text-sm font-semibold text-sub">Módulos e profissões</h2>
       {isAdmin(role) ? (
         <Link
-          href="/gerenciar/loja"
+          href="/painel/loja"
           className="flex items-center justify-between gap-4 rounded-[var(--radius)] border border-edge bg-surface p-4 shadow-sm transition-colors hover:border-primary"
         >
           <div>

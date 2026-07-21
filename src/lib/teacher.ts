@@ -1,9 +1,11 @@
-import { headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { resolveTenant, type Tenant } from "@/lib/tenant";
+import { resolveTenantBySlug, type Tenant } from "@/lib/tenant";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { MANAGER_ROLES, type Role } from "@/lib/roles";
-import { effectiveModules, type ModuleKey } from "@/lib/modules";
+import { PORTAL_COOKIE } from "@/lib/urls";
+import { effectiveModules, type ModuleKey, type OrgModuleRow } from "@/lib/modules";
 
 export type ManagerContext = {
   tenant: Tenant;
@@ -13,44 +15,79 @@ export type ManagerContext = {
   modules: ModuleKey[];
 };
 
+export type ManagerOrg = {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  plan: string;
+};
+
 /**
- * Gate do painel de gestão (`/gerenciar`). Resolve o tenant pelo host, exige sessão e um papel
- * de GESTÃO neste org (dono/diretor/coordenador/professor/staff — ver MANAGER_ROLES).
- * Redireciona: sem tenant → `/`; sem sessão → `/entrar?next=/gerenciar`; logado sem papel de
- * gestão (aluno/responsável) → `/sem-acesso`. Reutilizável em server actions.
+ * Portais (orgs) que o usuário GERENCIA — dono + memberships de gestão. Usa service-role
+ * (server-only), sempre filtrado pelo próprio usuário, então não depende da RLS de leitura.
+ */
+export async function listManagerOrgs(userId: string): Promise<ManagerOrg[]> {
+  const admin = createAdminClient();
+  // "owner" não é papel de membership (é o owner_id do org) — o dono vem da query `owned`.
+  const membershipManagerRoles = MANAGER_ROLES.filter((r) => r !== "owner");
+  const [ownedRes, memRes] = await Promise.all([
+    admin.from("orgs").select("id, name, slug, status, plan").eq("owner_id", userId),
+    admin
+      .from("memberships")
+      .select("orgs(id, name, slug, status, plan)")
+      .eq("user_id", userId)
+      .in("role", membershipManagerRoles),
+  ]);
+
+  const byId = new Map<string, ManagerOrg>();
+  for (const o of (ownedRes.data ?? []) as ManagerOrg[]) byId.set(o.id, o);
+  for (const row of (memRes.data ?? []) as { orgs: ManagerOrg | ManagerOrg[] | null }[]) {
+    const o = Array.isArray(row.orgs) ? row.orgs[0] : row.orgs;
+    if (o && !byId.has(o.id)) byId.set(o.id, o);
+  }
+  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * Gate do CONSOLE do profissional (`/painel`). Resolve o portal pelo COOKIE de seleção
+ * (não pelo host — o console mora na plataforma). Exige sessão e papel de gestão NESTE portal.
+ * Redireciona: sem sessão → `/login?next=/painel`; sem/ inválida seleção → `/painel` (seletor);
+ * logado sem papel de gestão no portal → `/painel`. Reutilizável em server actions.
  */
 export async function requireManager(): Promise<ManagerContext> {
-  const h = await headers();
-  const host = h.get("x-tenant-host") ?? h.get("host") ?? "";
-  const tenant = await resolveTenant(host);
-  if (!tenant) redirect("/");
-
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/entrar?next=/gerenciar");
+  if (!user) redirect("/login?next=/painel");
+
+  const jar = await cookies();
+  const slug = jar.get(PORTAL_COOKIE)?.value ?? "";
+  if (!slug) redirect("/painel");
+
+  const tenant = await resolveTenantBySlug(slug);
+  if (!tenant) redirect("/painel");
+
+  let role: Role | undefined;
+  if (tenant.org.owner_id === user.id) {
+    role = "owner";
+  } else {
+    const { data: mem } = await supabase
+      .from("memberships")
+      .select("role")
+      .eq("org_id", tenant.org.id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const r = (mem as { role?: Role } | null)?.role;
+    if (r && MANAGER_ROLES.includes(r)) role = r;
+  }
+  if (!role) redirect("/painel");
 
   const plan = tenant.org.plan;
   const { data: om } = await supabase
     .from("org_modules").select("module_key, enabled").eq("org_id", tenant.org.id);
-  const rows = (om ?? []) as { module_key: string; enabled: boolean }[];
-  const modules = effectiveModules(plan, rows);
+  const modules = effectiveModules(plan, (om ?? []) as OrgModuleRow[]);
 
-  if (tenant.org.owner_id === user.id) {
-    return { tenant, userId: user.id, role: "owner", plan, modules };
-  }
-
-  const { data: mem } = await supabase
-    .from("memberships")
-    .select("role")
-    .eq("org_id", tenant.org.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const role = (mem as { role?: Role } | null)?.role;
-  if (role && MANAGER_ROLES.includes(role)) {
-    return { tenant, userId: user.id, role, plan, modules };
-  }
-
-  redirect("/sem-acesso");
+  return { tenant, userId: user.id, role, plan, modules };
 }

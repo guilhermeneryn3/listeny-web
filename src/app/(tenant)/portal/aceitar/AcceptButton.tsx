@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-/** Aceita o convite via RPC accept_invitation e entra no painel do org. */
-export function AcceptButton({ token }: { token: string }) {
+/** Aceita o convite via RPC accept_invitation e entra no console (plataforma). */
+export function AcceptButton({ token, nextUrl }: { token: string; nextUrl: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +18,7 @@ export function AcceptButton({ token }: { token: string }) {
       setLoading(false);
       return;
     }
-    window.location.href = "/gerenciar";
+    window.location.href = nextUrl;
   }
 
   return (

@@ -89,8 +89,8 @@ function readFields(formData: FormData) {
 }
 
 function refresh() {
-  revalidatePath("/gerenciar/alunos");
-  revalidatePath("/gerenciar");
+  revalidatePath("/painel/alunos");
+  revalidatePath("/painel/inicio");
 }
 
 /** Cria um aluno no roster do professor (org derivado do gate, nunca do form). */

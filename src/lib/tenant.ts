@@ -98,8 +98,29 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
   }
 
   if (!org) return null;
+  return loadTenant(supabase, org);
+}
 
-  // 2) Branding do org (pode não existir ainda → usa o tema padrão).
+/** Resolve o tenant pelo SLUG do org (usado pelo console: portal selecionado, não host). */
+export async function resolveTenantBySlug(slug: string): Promise<Tenant | null> {
+  if (!slug) return null;
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("orgs")
+    .select("id, owner_id, name, slug, status, plan")
+    .eq("slug", slug)
+    .maybeSingle();
+  const org = (data as TenantOrg | null) ?? null;
+  if (!org) return null;
+  return loadTenant(supabase, org);
+}
+
+/** Carrega branding + tokens de um org já resolvido. */
+async function loadTenant(
+  supabase: ReturnType<typeof createAdminClient>,
+  org: TenantOrg,
+): Promise<Tenant> {
+  // Branding do org (pode não existir ainda → usa o tema padrão).
   const { data: brandingRow } = await supabase
     .from("org_branding")
     .select("theme_template_id, logo_url, custom_css, palette")
@@ -113,7 +134,7 @@ export async function resolveTenant(host: string): Promise<Tenant | null> {
     palette: Partial<ThemeTokens> | null;
   } | null;
 
-  // 3) Tokens do template escolhido (ou default) + overrides da palette.
+  // Tokens do template escolhido (ou default) + overrides da palette.
   let templateTokens: Partial<ThemeTokens> | null = null;
   if (branding?.theme_template_id) {
     const { data: tpl } = await supabase

@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { resolveTenant } from "@/lib/tenant";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABEL, type Role } from "@/lib/roles";
+import { consoleUrl } from "@/lib/urls";
 import { AcceptButton } from "./AcceptButton";
 
 function Shell({ children }: { children: React.ReactNode }) {
@@ -86,7 +87,7 @@ export default async function AceitarPage({
         Aceitar não afeta seus outros acessos.
       </p>
       <div className="mt-5">
-        <AcceptButton token={token} />
+        <AcceptButton token={token} nextUrl={consoleUrl(h.get("host") ?? host)} />
       </div>
     </Shell>
   );

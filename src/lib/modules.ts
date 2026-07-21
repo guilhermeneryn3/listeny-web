@@ -33,17 +33,17 @@ export type ModuleDef = {
 };
 
 export const MODULES: ModuleDef[] = [
-  { key: "alunos", label: "Alunos", href: "/gerenciar/alunos", category: "nativo", price: 0, description: "Cadastro e gestão dos seus alunos.", built: true },
-  { key: "turmas", label: "Turmas", href: "/gerenciar/turmas", category: "nativo", price: 0, description: "Organize alunos em turmas.", built: true },
-  { key: "agenda", label: "Agenda", href: "/gerenciar/agenda", category: "nativo", price: 0, description: "Agenda de sessões e agendamento pelos alunos.", built: true },
-  { key: "site", label: "Site", href: "/gerenciar/site", category: "nativo", price: 0, description: "Seu site e domínio próprio.", built: true },
-  { key: "aulas", label: "Aulas", href: "/gerenciar/aulas", category: "modulo", price: 19, description: "Publique aulas e materiais para os alunos.", built: true },
-  { key: "eventos", label: "Eventos", href: "/gerenciar/eventos", category: "modulo", price: 19, description: "Calendário público: excursões, reuniões, avisos.", built: true },
-  { key: "financeiro", label: "Financeiro", href: "/gerenciar/financeiro", category: "modulo", price: 29, description: "Cobranças e controle financeiro dos alunos.", built: true },
-  { key: "equipe", label: "Equipe", href: "/gerenciar/equipe", category: "modulo", price: 19, description: "Convide e gerencie sua equipe.", adminOnly: true, built: true },
-  { key: "progresso", label: "Progresso", href: "/gerenciar/progresso", category: "modulo", price: 19, description: "Boletim e acompanhamento de evolução." },
-  { key: "marketing", label: "Marketing", href: "/gerenciar/marketing", category: "modulo", price: 39, description: "Captação de leads e campanhas." },
-  { key: "rh", label: "RH", href: "/gerenciar/rh", category: "modulo", price: 49, description: "Gestão de pessoas para instituições.", adminOnly: true },
+  { key: "alunos", label: "Alunos", href: "/painel/alunos", category: "nativo", price: 0, description: "Cadastro e gestão dos seus alunos.", built: true },
+  { key: "turmas", label: "Turmas", href: "/painel/turmas", category: "nativo", price: 0, description: "Organize alunos em turmas.", built: true },
+  { key: "agenda", label: "Agenda", href: "/painel/agenda", category: "nativo", price: 0, description: "Agenda de sessões e agendamento pelos alunos.", built: true },
+  { key: "site", label: "Site", href: "/painel/site", category: "nativo", price: 0, description: "Seu site e domínio próprio.", built: true },
+  { key: "aulas", label: "Aulas", href: "/painel/aulas", category: "modulo", price: 19, description: "Publique aulas e materiais para os alunos.", built: true },
+  { key: "eventos", label: "Eventos", href: "/painel/eventos", category: "modulo", price: 19, description: "Calendário público: excursões, reuniões, avisos.", built: true },
+  { key: "financeiro", label: "Financeiro", href: "/painel/financeiro", category: "modulo", price: 29, description: "Cobranças e controle financeiro dos alunos.", built: true },
+  { key: "equipe", label: "Equipe", href: "/painel/equipe", category: "modulo", price: 19, description: "Convide e gerencie sua equipe.", adminOnly: true, built: true },
+  { key: "progresso", label: "Progresso", href: "/painel/progresso", category: "modulo", price: 19, description: "Boletim e acompanhamento de evolução." },
+  { key: "marketing", label: "Marketing", href: "/painel/marketing", category: "modulo", price: 39, description: "Captação de leads e campanhas." },
+  { key: "rh", label: "RH", href: "/painel/rh", category: "modulo", price: 49, description: "Gestão de pessoas para instituições.", adminOnly: true },
 ];
 
 /** Profissões/verticais instaláveis (etiqueta de segmento na v1). Você cria cada uma aqui. */

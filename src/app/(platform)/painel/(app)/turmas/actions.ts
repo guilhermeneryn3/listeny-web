@@ -7,8 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 export type ClassState = { ok?: boolean; error?: string };
 
 function refresh() {
-  revalidatePath("/gerenciar/turmas");
-  revalidatePath("/gerenciar");
+  revalidatePath("/painel/turmas");
+  revalidatePath("/painel/inicio");
 }
 
 export async function createClass(

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { resolveTenant, type Tenant } from "@/lib/tenant";
 import { createClient } from "@/lib/supabase/server";
 import { MANAGER_ROLES, type Role } from "@/lib/roles";
+import { consoleUrl } from "@/lib/urls";
 
 export type StudentContext = {
   tenant: Tenant;
@@ -18,6 +19,7 @@ export type StudentContext = {
 export async function requireStudent(): Promise<StudentContext> {
   const h = await headers();
   const host = h.get("x-tenant-host") ?? h.get("host") ?? "";
+  const rawHost = h.get("host") ?? host; // com porta, p/ a URL do console (cross-host)
   const tenant = await resolveTenant(host);
   if (!tenant) redirect("/");
 
@@ -25,12 +27,12 @@ export async function requireStudent(): Promise<StudentContext> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/entrar?next=/aluno");
 
-  if (tenant.org.owner_id === user.id) redirect("/gerenciar");
+  if (tenant.org.owner_id === user.id) redirect(consoleUrl(rawHost));
 
   const { data: mem } = await supabase
     .from("memberships").select("role").eq("org_id", tenant.org.id).eq("user_id", user.id).maybeSingle();
   const role = (mem as { role?: Role } | null)?.role;
-  if (role && MANAGER_ROLES.includes(role)) redirect("/gerenciar");
+  if (role && MANAGER_ROLES.includes(role)) redirect(consoleUrl(rawHost));
 
   const { data: stu } = await supabase
     .from("students").select("id").eq("org_id", tenant.org.id).eq("user_id", user.id).maybeSingle();

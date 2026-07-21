@@ -35,7 +35,7 @@ export async function addDomain(_prev: DomainState, formData: FormData): Promise
     if (error.code === "23505") return { error: "Esse domínio já está em uso." };
     return { error: "Não foi possível adicionar o domínio." };
   }
-  revalidatePath("/gerenciar/site");
+  revalidatePath("/painel/site");
   return { ok: true };
 }
 
@@ -47,7 +47,7 @@ export async function removeDomain(formData: FormData): Promise<void> {
 
   const admin = createAdminClient();
   await admin.from("org_domains").delete().eq("id", id).eq("org_id", orgId);
-  revalidatePath("/gerenciar/site");
+  revalidatePath("/painel/site");
 }
 
 export async function setPrimaryDomain(formData: FormData): Promise<void> {
@@ -64,5 +64,5 @@ export async function setPrimaryDomain(formData: FormData): Promise<void> {
 
   await admin.from("org_domains").update({ is_primary: false }).eq("org_id", orgId);
   await admin.from("org_domains").update({ is_primary: true }).eq("id", id).eq("org_id", orgId);
-  revalidatePath("/gerenciar/site");
+  revalidatePath("/painel/site");
 }

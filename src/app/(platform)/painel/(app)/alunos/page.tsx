@@ -19,17 +19,21 @@ export default async function AlunosPage() {
     supabase.from("org_student_form").select("fields").eq("org_id", tenant.org.id).maybeSingle(),
   ]);
 
-  const students: Student[] = (data ?? []).map((s) => ({
-    id: s.id as string,
-    name: s.name as string,
-    email: (s.email as string | null) ?? null,
-    phone: (s.phone as string | null) ?? null,
-    notes: (s.notes as string | null) ?? null,
-    status: s.status as Student["status"],
-    hasAccess: !!s.user_id,
-    avatarUrl: (s.avatar_url as string | null) ?? null,
-    profile: (s.profile as Record<string, string> | null) ?? {},
-  }));
+  const students: Student[] = (data ?? []).map((s) => {
+    const profile = (s.profile as Record<string, string> | null) ?? {};
+    return {
+      id: s.id as string,
+      name: s.name as string,
+      email: (s.email as string | null) ?? null,
+      phone: (s.phone as string | null) ?? null,
+      // autocadastro guarda extras em profile → fallback para notes/foto
+      notes: (s.notes as string | null) ?? profile.notes ?? null,
+      status: s.status as Student["status"],
+      hasAccess: !!s.user_id,
+      avatarUrl: (s.avatar_url as string | null) ?? profile.avatar_url ?? null,
+      profile,
+    };
+  });
 
   const fields = effectiveFields((formRow as { fields?: FieldConfig[] } | null)?.fields ?? null);
 

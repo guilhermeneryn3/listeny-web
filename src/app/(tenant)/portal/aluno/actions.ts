@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 
 /** O aluno marca/desmarca a própria tarefa como concluída. */
 export async function setLessonDone(formData: FormData): Promise<void> {
-  const { studentId } = await requireStudent();
+  const { studentId, portalEnabled } = await requireStudent();
+  if (!portalEnabled) return;
   const lessonId = String(formData.get("lesson_id") ?? "");
   const done = String(formData.get("done") ?? "") === "true";
   if (!lessonId || !studentId) return;
@@ -22,7 +23,8 @@ export async function setLessonDone(formData: FormData): Promise<void> {
 
 /** O aluno reserva uma vaga aberta (a RPC valida tudo e cria o vínculo). */
 export async function bookSession(formData: FormData): Promise<void> {
-  await requireStudent();
+  const { portalEnabled } = await requireStudent();
+  if (!portalEnabled) return;
   const sessionId = String(formData.get("session_id") ?? "");
   if (!sessionId) return;
   const supabase = await createClient();

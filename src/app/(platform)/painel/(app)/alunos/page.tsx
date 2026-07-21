@@ -4,8 +4,9 @@ import { StudentsManager, type Student } from "./_components/StudentsManager";
 
 /** Roster de alunos do professor. Dados reais (RLS por org); estado vazio quando não há. */
 export default async function AlunosPage() {
-  const { tenant } = await requireManager();
+  const { tenant, modules } = await requireManager();
   const supabase = await createClient();
+  const portalOff = !modules.includes("portal-aluno");
 
   const { data } = await supabase
     .from("students")
@@ -23,5 +24,16 @@ export default async function AlunosPage() {
     hasAccess: !!s.user_id,
   }));
 
-  return <StudentsManager students={students} />;
+  return (
+    <div>
+      {portalOff && (
+        <div className="mb-4 rounded-[var(--radius)] border border-edge bg-soft p-3 text-sm text-sub">
+          O <span className="font-semibold text-ink">Portal do Aluno</span> está desligado — os alunos
+          não conseguem entrar na área logada. Ative na{" "}
+          <a href="/painel/loja" className="font-semibold text-primary-dark hover:underline">Loja</a>.
+        </div>
+      )}
+      <StudentsManager students={students} />
+    </div>
+  );
 }

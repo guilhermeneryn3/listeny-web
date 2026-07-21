@@ -33,7 +33,27 @@ async function signOut() {
 }
 
 export default async function AlunoPage() {
-  const { tenant, studentId } = await requireStudent();
+  const { tenant, studentId, portalEnabled } = await requireStudent();
+
+  // Portal do Aluno desligado no org → área indisponível (contas preservadas).
+  if (!portalEnabled) {
+    return (
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
+        <div className="rounded-[var(--radius)] border border-dashed border-edge bg-soft p-10 text-center">
+          <h1 className="text-xl font-extrabold tracking-tight text-ink">Área do aluno indisponível</h1>
+          <p className="mx-auto mt-2 max-w-md text-sm text-sub">
+            {tenant.org.name} ainda não disponibiliza a área do aluno.
+          </p>
+          <form action={signOut} className="mt-6">
+            <button type="submit" className="rounded-lg px-3 py-1.5 text-sm font-medium text-sub transition-colors hover:bg-soft hover:text-ink">
+              Sair
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
   const supabase = await createClient();
 
   let name = "";

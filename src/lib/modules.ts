@@ -17,7 +17,7 @@ import type { Plan } from "@/lib/plans";
 export type ModuleKey =
   | "alunos" | "turmas" | "agenda" | "site" | "eventos"
   | "aulas" | "progresso" | "financeiro"
-  | "equipe" | "marketing" | "rh";
+  | "equipe" | "marketing" | "rh" | "portal-aluno";
 
 export type ModuleCategory = "nativo" | "modulo";
 
@@ -30,6 +30,7 @@ export type ModuleDef = {
   description: string;
   adminOnly?: boolean; // só dono/diretor (ex.: equipe, rh)
   built?: boolean; // já implementado (senão aparece como "em breve", não instalável)
+  capability?: boolean; // liga uma CAPACIDADE (ex.: área do aluno), não é tela no menu do painel
 };
 
 export const MODULES: ModuleDef[] = [
@@ -41,6 +42,7 @@ export const MODULES: ModuleDef[] = [
   { key: "eventos", label: "Eventos", href: "/painel/eventos", category: "modulo", price: 19, description: "Calendário público: excursões, reuniões, avisos.", built: true },
   { key: "financeiro", label: "Financeiro", href: "/painel/financeiro", category: "modulo", price: 29, description: "Cobranças e controle financeiro dos alunos.", built: true },
   { key: "equipe", label: "Equipe", href: "/painel/equipe", category: "modulo", price: 19, description: "Convide e gerencie sua equipe.", adminOnly: true, built: true },
+  { key: "portal-aluno", label: "Portal do Aluno", href: "/aluno", category: "modulo", price: 29, description: "Área logada onde o aluno acessa aulas, cobranças e agenda.", built: true, capability: true },
   { key: "progresso", label: "Progresso", href: "/painel/progresso", category: "modulo", price: 19, description: "Boletim e acompanhamento de evolução." },
   { key: "marketing", label: "Marketing", href: "/painel/marketing", category: "modulo", price: 39, description: "Captação de leads e campanhas." },
   { key: "rh", label: "RH", href: "/painel/rh", category: "modulo", price: 49, description: "Gestão de pessoas para instituições.", adminOnly: true },
@@ -69,9 +71,9 @@ export const PROFESSIONS: ProfessionDef[] = [
 export const PLAN_MODULES: Record<Plan, ModuleKey[]> = {
   free: ["alunos", "turmas", "agenda", "site"],
   basico: ["alunos", "turmas", "agenda", "site", "aulas"],
-  intermediario: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "eventos"],
-  premium: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "eventos"],
-  enterprise: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "rh", "eventos"],
+  intermediario: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "eventos", "portal-aluno"],
+  premium: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "eventos", "portal-aluno"],
+  enterprise: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "rh", "eventos", "portal-aluno"],
 };
 
 export function planModules(plan: string | null | undefined): ModuleKey[] {

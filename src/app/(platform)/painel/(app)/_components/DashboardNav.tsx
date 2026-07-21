@@ -34,6 +34,7 @@ const ICONS: Record<ModuleKey | "inicio" | "ajustes" | "loja", string> = {
   equipe: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 20c0-2.8 2.7-5 6-5s6 2.2 6 5M16 5.5a3 3 0 0 1 0 6M18 20c0-1.8-.7-3.4-1.9-4.6",
   marketing: "M3 11v2l14 5V6L3 11ZM17 8a3 3 0 0 1 0 8M6 13v5",
   rh: "M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 17c0-1.7 1.8-3 4-3s4 1.3 4 3",
+  "portal-aluno": "M16 19c0-2.2-1.8-4-4-4s-4 1.8-4 4M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z", // capacidade: não vai na nav
   ajustes: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19 12l1.5 1-1 2-1.8-.4-1.2 1.5.4 1.8-2 1-1.3-1.5-1.9.4-1.3 1.1-2-1 .4-1.8L4 13l-1.5-1 1-2 1.8.4L6.5 9l-.4-1.8 2-1L9.4 7.7 11.3 7l1.3-1.1 2 1-.4 1.8L15.4 10",
 };
 
@@ -49,7 +50,9 @@ export function DashboardNav({
   plan: string;
 }) {
   const pathname = usePathname();
-  const enabled = MODULES.filter((m) => modules.includes(m.key) && (!m.adminOnly || isAdmin(role)));
+  const enabled = MODULES.filter(
+    (m) => modules.includes(m.key) && (!m.adminOnly || isAdmin(role)) && !m.capability,
+  );
 
   const inicioActive = pathname === "/painel/inicio";
 

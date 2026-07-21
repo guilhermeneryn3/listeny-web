@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { savePaymentGateway, disconnectPayment, PAYMENT_PROVIDERS, type AjustesState } from "../../actions";
+import { savePaymentGateway, disconnectPayment, type AjustesState } from "../../actions";
+import { PAYMENT_PROVIDERS } from "../../providers";
 
 const field =
   "w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-primary";

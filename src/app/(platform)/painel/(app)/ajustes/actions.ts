@@ -4,17 +4,9 @@ import { revalidatePath } from "next/cache";
 import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PAYMENT_PROVIDERS } from "./providers";
 
 export type AjustesState = { ok?: boolean; error?: string };
-
-export const PAYMENT_PROVIDERS = [
-  { key: "mercadopago", label: "Mercado Pago" },
-  { key: "pagarme", label: "Pagar.me" },
-  { key: "pagseguro", label: "PagSeguro" },
-  { key: "asaas", label: "Asaas" },
-  { key: "infinitepay", label: "InfinitePay" },
-  { key: "outro", label: "Outro" },
-];
 
 /**
  * Conecta o gateway do professor (recebimento dos alunos). Só o dono. Metadados em `connectors`;

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { requireManager, listManagerOrgs } from "@/lib/teacher";
+import { requireManager } from "@/lib/teacher";
 import { BrandMark } from "@/components/BrandMark";
 import { DashboardNav } from "./_components/DashboardNav";
 
@@ -10,9 +10,7 @@ import { DashboardNav } from "./_components/DashboardNav";
  * Mostra o portal atual e, se a pessoa tem mais de um, o "Trocar portal".
  */
 export default async function ConsoleLayout({ children }: { children: ReactNode }) {
-  const { tenant, role, plan, modules, userId } = await requireManager();
-  const orgs = await listManagerOrgs(userId);
-  const multi = orgs.length > 1;
+  const { tenant, role, plan, modules } = await requireManager();
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-bg text-ink">
@@ -23,14 +21,12 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
           </Link>
           <span className="text-hint">/</span>
           <span className="truncate font-semibold text-ink">{tenant.org.name}</span>
-          {multi && (
-            <Link
-              href="/painel"
-              className="ml-auto rounded-lg border border-edge px-3 py-1.5 text-sm font-medium text-sub transition-colors hover:border-primary"
-            >
-              Trocar portal
-            </Link>
-          )}
+          <Link
+            href="/painel/portais"
+            className="ml-auto rounded-lg border border-edge px-3 py-1.5 text-sm font-medium text-sub transition-colors hover:border-primary"
+          >
+            Seus portais
+          </Link>
         </div>
       </header>
 

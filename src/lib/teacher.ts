@@ -21,6 +21,7 @@ export type ManagerOrg = {
   slug: string;
   status: string;
   plan: string;
+  owned: boolean; // true = a pessoa é DONA do portal (pode excluir)
 };
 
 /**
@@ -40,11 +41,12 @@ export async function listManagerOrgs(userId: string): Promise<ManagerOrg[]> {
       .in("role", membershipManagerRoles),
   ]);
 
+  type OrgRow = Omit<ManagerOrg, "owned">;
   const byId = new Map<string, ManagerOrg>();
-  for (const o of (ownedRes.data ?? []) as ManagerOrg[]) byId.set(o.id, o);
-  for (const row of (memRes.data ?? []) as { orgs: ManagerOrg | ManagerOrg[] | null }[]) {
+  for (const o of (ownedRes.data ?? []) as OrgRow[]) byId.set(o.id, { ...o, owned: true });
+  for (const row of (memRes.data ?? []) as { orgs: OrgRow | OrgRow[] | null }[]) {
     const o = Array.isArray(row.orgs) ? row.orgs[0] : row.orgs;
-    if (o && !byId.has(o.id)) byId.set(o.id, o);
+    if (o && !byId.has(o.id)) byId.set(o.id, { ...o, owned: false });
   }
   return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
 }

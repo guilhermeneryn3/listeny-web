@@ -7,6 +7,7 @@ import {
   setSessionStatus,
   setAttendance,
   removeSession,
+  setBooking,
   type SessionState,
 } from "../actions";
 
@@ -23,6 +24,7 @@ export type SessionRow = {
   class_id: string | null;
   notes: string | null;
   status: "scheduled" | "done" | "canceled" | "no_show";
+  bookable: boolean;
   participants: Participant[];
 };
 export type StudentLite = { id: string; name: string };
@@ -128,6 +130,11 @@ function SessionForm({
         </label>
       )}
 
+      <label className="mt-3 flex items-center gap-2 text-sm font-medium text-ink">
+        <input type="checkbox" name="bookable" defaultChecked={session?.bookable ?? false} />
+        Vaga aberta para agendamento (o aluno reserva)
+      </label>
+
       {state.error && <p className="mt-3 text-sm text-danger" role="alert">{state.error}</p>}
       <div className="mt-4 flex gap-2">
         <button type="submit" disabled={pending} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-surface transition-colors hover:bg-primary-dark disabled:opacity-60">
@@ -161,6 +168,9 @@ function SessionCard({ s, onEdit }: { s: SessionRow; onEdit: () => void }) {
             <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-dark">
               {s.kind === "online" ? "online" : "presencial"}
             </span>
+            {s.bookable && s.participants.length === 0 && (
+              <span className="rounded-full bg-success px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-surface">vaga aberta</span>
+            )}
             {s.status !== "scheduled" && (
               <span className="rounded-full bg-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-hint">
                 {STATUS_LABEL[s.status]}
@@ -242,10 +252,12 @@ export function AgendaManager({
   sessions,
   students,
   classes,
+  bookingEnabled,
 }: {
   sessions: SessionRow[];
   students: StudentLite[];
   classes: ClassLite[];
+  bookingEnabled: boolean;
 }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -267,6 +279,19 @@ export function AgendaManager({
           </button>
         )}
       </div>
+
+      <form action={setBooking} className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius)] border border-edge bg-surface p-4 shadow-sm">
+        <div>
+          <div className="text-sm font-semibold text-ink">Agendamento pelo aluno</div>
+          <div className="text-sm text-sub">
+            {bookingEnabled ? "Ligado — alunos reservam as vagas abertas." : "Desligado — só você agenda."}
+          </div>
+        </div>
+        <input type="hidden" name="enabled" value={bookingEnabled ? "false" : "true"} />
+        <button type="submit" className={`rounded-lg px-4 py-2 text-sm font-semibold ${bookingEnabled ? "bg-soft text-sub hover:bg-edge" : "bg-primary text-surface hover:bg-primary-dark"}`}>
+          {bookingEnabled ? "Desligar" : "Ligar"}
+        </button>
+      </form>
 
       {adding && (
         <div className="mb-4">

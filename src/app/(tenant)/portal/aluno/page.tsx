@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireStudent } from "@/lib/student";
 import { createClient } from "@/lib/supabase/server";
-import { setLessonDone } from "./actions";
+import { setLessonDone, bookSession } from "./actions";
 
 const dayFmt = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
 const timeFmt = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -99,6 +99,21 @@ export default async function AlunoPage() {
   }
   const todayStr = new Date(now).toISOString().slice(0, 10);
 
+  // ── Vagas abertas p/ agendar (se o professor ligou) ──
+  let openSlots: Sess[] = [];
+  const { data: bk } = await supabase.from("org_booking").select("enabled").eq("org_id", tenant.org.id).maybeSingle();
+  const bookingEnabled = !!(bk as { enabled?: boolean } | null)?.enabled;
+  if (bookingEnabled) {
+    const { data } = await supabase
+      .from("sessions")
+      .select("id, title, kind, starts_at, duration_min, location, meeting_url, recording_url, status")
+      .eq("org_id", tenant.org.id)
+      .eq("bookable", true)
+      .gt("starts_at", new Date(now).toISOString())
+      .order("starts_at");
+    openSlots = (data ?? []) as Sess[];
+  }
+
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
       <div className="mb-6 flex items-center justify-between">
@@ -178,6 +193,34 @@ export default async function AlunoPage() {
                 </li>
               );
             })}
+          </ul>
+        </>
+      )}
+
+      {/* Agendar (vagas abertas) */}
+      {bookingEnabled && openSlots.length > 0 && (
+        <>
+          <h2 className="mb-2 text-sm font-semibold text-sub">Agendar uma aula</h2>
+          <ul className="mb-8 flex flex-col gap-2">
+            {openSlots.map((s) => (
+              <li key={s.id} className="flex items-center gap-3 rounded-[var(--radius)] border border-edge bg-surface p-4 shadow-sm">
+                <div className="w-16 shrink-0 text-center">
+                  <div className="text-lg font-extrabold text-ink">{timeFmt.format(new Date(s.starts_at))}</div>
+                  <div className="text-xs text-hint">{s.duration_min}min</div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-ink">{s.title}</span>
+                    <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-dark">{s.kind === "online" ? "online" : "presencial"}</span>
+                  </div>
+                  <div className="mt-0.5 text-sm capitalize text-sub">{dayFmt.format(new Date(s.starts_at))}</div>
+                </div>
+                <form action={bookSession} className="shrink-0">
+                  <input type="hidden" name="session_id" value={s.id} />
+                  <button type="submit" className="rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-surface transition-colors hover:bg-primary-dark">Reservar</button>
+                </form>
+              </li>
+            ))}
           </ul>
         </>
       )}

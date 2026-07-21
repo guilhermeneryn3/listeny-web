@@ -19,3 +19,13 @@ export async function setLessonDone(formData: FormData): Promise<void> {
     .eq("student_id", studentId);
   revalidatePath("/aluno");
 }
+
+/** O aluno reserva uma vaga aberta (a RPC valida tudo e cria o vínculo). */
+export async function bookSession(formData: FormData): Promise<void> {
+  await requireStudent();
+  const sessionId = String(formData.get("session_id") ?? "");
+  if (!sessionId) return;
+  const supabase = await createClient();
+  await supabase.rpc("book_session", { p_session: sessionId });
+  revalidatePath("/aluno");
+}

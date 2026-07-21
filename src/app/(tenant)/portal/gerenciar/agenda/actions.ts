@@ -22,6 +22,7 @@ type Fields = {
   recordingUrl: string | null;
   classId: string | null;
   notes: string | null;
+  bookable: boolean;
 };
 
 function readFields(formData: FormData): Fields | { error: string } {
@@ -43,6 +44,7 @@ function readFields(formData: FormData): Fields | { error: string } {
     recordingUrl: String(formData.get("recording_url") ?? "").trim() || null,
     classId: String(formData.get("class_id") ?? "").trim() || null,
     notes: String(formData.get("notes") ?? "").trim() || null,
+    bookable: String(formData.get("bookable") ?? "") === "on",
   };
 }
 
@@ -103,6 +105,7 @@ export async function createSession(
         recording_url: f.recordingUrl,
         class_id: classId,
         notes: f.notes,
+        bookable: f.bookable,
       })
       .select("id")
       .single();
@@ -150,6 +153,7 @@ export async function updateSession(
       recording_url: f.recordingUrl,
       class_id: classId,
       notes: f.notes,
+      bookable: f.bookable,
     })
     .eq("id", id)
     .eq("org_id", orgId);
@@ -211,5 +215,14 @@ export async function removeSession(formData: FormData): Promise<void> {
 
   const supabase = await createClient();
   await supabase.from("sessions").delete().eq("id", id).eq("org_id", tenant.org.id);
+  refresh();
+}
+
+/** Liga/desliga o agendamento pelo aluno (opt-in por org). */
+export async function setBooking(formData: FormData): Promise<void> {
+  const { tenant } = await requireManager();
+  const enabled = String(formData.get("enabled") ?? "") === "true";
+  const supabase = await createClient();
+  await supabase.from("org_booking").upsert({ org_id: tenant.org.id, enabled }, { onConflict: "org_id" });
   refresh();
 }

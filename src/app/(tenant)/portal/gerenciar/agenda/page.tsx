@@ -14,10 +14,10 @@ export default async function AgendaPage() {
   const supabase = await createClient();
   const orgId = tenant.org.id;
 
-  const [sessRes, studentsRes, classesRes] = await Promise.all([
+  const [sessRes, studentsRes, classesRes, bookingRes] = await Promise.all([
     supabase
       .from("sessions")
-      .select("id, title, kind, starts_at, duration_min, location, meeting_url, recording_url, class_id, notes, status")
+      .select("id, title, kind, starts_at, duration_min, location, meeting_url, recording_url, class_id, notes, status, bookable")
       .eq("org_id", orgId)
       .order("starts_at"),
     supabase
@@ -27,7 +27,9 @@ export default async function AgendaPage() {
       .eq("status", "active")
       .order("name"),
     supabase.from("classes").select("id, name").eq("org_id", orgId).order("name"),
+    supabase.from("org_booking").select("enabled").eq("org_id", orgId).maybeSingle(),
   ]);
+  const bookingEnabled = !!(bookingRes.data as { enabled?: boolean } | null)?.enabled;
 
   const baseSessions = (sessRes.data ?? []) as Omit<SessionRow, "participants">[];
   const ids = baseSessions.map((s) => s.id);
@@ -60,5 +62,5 @@ export default async function AgendaPage() {
   const students = (studentsRes.data ?? []) as StudentLite[];
   const classes = (classesRes.data ?? []) as ClassLite[];
 
-  return <AgendaManager sessions={sessions} students={students} classes={classes} />;
+  return <AgendaManager sessions={sessions} students={students} classes={classes} bookingEnabled={bookingEnabled} />;
 }

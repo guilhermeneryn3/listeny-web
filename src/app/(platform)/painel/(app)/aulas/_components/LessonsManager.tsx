@@ -85,11 +85,12 @@ function LessonForm({
       </div>
 
       <div className="mt-3">
-        <span className="mb-1 block text-sm font-medium text-sub">Materiais (links)</span>
+        <span className="mb-1 block text-sm font-medium text-sub">Vídeo e materiais (links)</span>
+        <p className="mb-1.5 text-xs text-hint">Link do YouTube ou Vimeo vira player de vídeo na aula. Outros links (PDF, Drive) viram material.</p>
         <div className="flex flex-col gap-2">
           {media.map((m, i) => (
             <div key={i} className="flex gap-2">
-              <input name="media_url" defaultValue={m.url} placeholder="https://… (Drive, YouTube, PDF)" className={field} />
+              <input name="media_url" defaultValue={m.url} placeholder="https://youtube.com/… ou PDF/Drive" className={field} />
               <input name="media_name" defaultValue={m.name ?? ""} placeholder="Nome (opcional)" className={`${field} sm:w-48`} />
               <button type="button" onClick={() => setMedia(media.filter((_, j) => j !== i))} className="shrink-0 rounded-lg px-2 text-sm text-danger hover:bg-soft">×</button>
             </div>

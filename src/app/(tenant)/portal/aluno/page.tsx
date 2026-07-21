@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireStudent } from "@/lib/student";
 import { createClient } from "@/lib/supabase/server";
+import { videoEmbed } from "@/lib/video";
 import { setLessonDone } from "./actions";
 import { StudentBooking } from "./_components/StudentBooking";
 
@@ -30,6 +31,42 @@ async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+type MediaItem = { url: string; name: string | null };
+
+/** Mídia da aula: links de vídeo (YouTube/Vimeo) viram player embutido; o resto vira material. */
+function LessonMedia({ media, title }: { media: MediaItem[]; title: string }) {
+  if (media.length === 0) return null;
+  const videos = media
+    .map((m) => ({ m, embed: videoEmbed(m.url) }))
+    .filter((x): x is { m: MediaItem; embed: string } => x.embed !== null);
+  const materials = media.filter((m) => videoEmbed(m.url) === null);
+
+  return (
+    <>
+      {videos.map(({ m, embed }, i) => (
+        <div key={`v${i}`} className="mt-2 aspect-video w-full overflow-hidden rounded-lg border border-edge bg-black">
+          <iframe
+            src={embed}
+            title={m.name || title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="h-full w-full"
+          />
+        </div>
+      ))}
+      {materials.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-3">
+          {materials.map((m, i) => (
+            <a key={`m${i}`} href={m.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-primary-dark hover:underline">
+              {m.name || "Material"}
+            </a>
+          ))}
+        </div>
+      )}
+    </>
+  );
 }
 
 export default async function AlunoPage() {
@@ -178,13 +215,7 @@ export default async function AlunoPage() {
                       {l.due_date && <span className="text-xs text-hint">prazo {dateFmt.format(new Date(l.due_date + "T00:00:00"))}</span>}
                     </div>
                     {l.description && <p className="mt-1 whitespace-pre-line text-sm text-sub">{l.description}</p>}
-                    {l.media.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-3">
-                        {l.media.map((m, i) => (
-                          <a key={i} href={m.url} target="_blank" rel="noreferrer" className="text-sm font-medium text-primary-dark hover:underline">{m.name || "Material"}</a>
-                        ))}
-                      </div>
-                    )}
+                    <LessonMedia media={l.media} title={l.title} />
                   </div>
                   <form action={setLessonDone} className="shrink-0">
                     <input type="hidden" name="lesson_id" value={l.id} />

@@ -58,6 +58,17 @@ export function mergeTokens(
   };
 }
 
+/** Escurece um hex (#rrggbb) por um fator (0–1) — usado p/ derivar a cor de hover (primaryDark). */
+export function darken(hex: string, factor = 0.85): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) =>
+    Math.max(0, Math.min(255, Math.round(c * factor))),
+  );
+  return "#" + ch.map((c) => c.toString(16).padStart(2, "0")).join("");
+}
+
 /**
  * Converte os tokens em variáveis CSS para injeção inline no shell do tenant.
  * O nome de cada variável casa com o contrato do `globals.css` (@theme inline),

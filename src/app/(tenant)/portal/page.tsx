@@ -10,12 +10,22 @@ type SiteRow = {
   contact_email: string | null; contact_phone: string | null; contact_whatsapp: string | null;
   address: string | null;
   instagram: string | null; youtube: string | null; tiktok: string | null; facebook: string | null;
+  show_about: boolean; show_offerings: boolean; show_events: boolean; show_booking: boolean; show_contact: boolean;
+  booking_cta_label: string | null;
 };
 type OfferingRow = {
   id: string; title: string; description: string | null;
   price: number | null; currency: string; duration_min: number | null;
   cta_label: string | null; cta_url: string | null;
 };
+type EvRow = {
+  id: string; title: string; type: string; event_date: string; start_time: string | null; location: string | null;
+};
+
+const EV_TYPE_LABEL: Record<string, string> = {
+  excursao: "Excursão", reuniao: "Reunião", evento: "Evento", feriado: "Feriado", aviso: "Aviso",
+};
+const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" });
 
 function money(price: number, currency: string): string {
   try {
@@ -72,10 +82,27 @@ export default async function TenantHome() {
     );
   }
 
+  // Eventos públicos (se a seção estiver ligada).
+  let events: EvRow[] = [];
+  if (site.show_events) {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const { data } = await supabase
+      .from("events")
+      .select("id, title, type, event_date, start_time, location")
+      .eq("org_id", org.id)
+      .eq("visibility", "public")
+      .gte("event_date", todayStr)
+      .order("event_date", { ascending: true })
+      .limit(6);
+    events = (data ?? []) as EvRow[];
+  }
+
   const socials: [string, string | null][] = [
     ["instagram", site.instagram], ["youtube", site.youtube],
     ["tiktok", site.tiktok], ["facebook", site.facebook],
   ];
+  const hasContact = !!(site.contact_whatsapp || site.contact_email || site.contact_phone || site.address);
+  const hasSocials = socials.some(([, v]) => v);
 
   return (
     <main className="flex-1">
@@ -93,16 +120,23 @@ export default async function TenantHome() {
               {site.hero_subtitle}
             </p>
           )}
-          {site.hero_cta_label && site.hero_cta_url && (
-            <a href={site.hero_cta_url} className="mt-8 inline-flex rounded-[var(--radius)] bg-primary px-7 py-3 text-base font-semibold text-surface shadow-sm transition-colors hover:bg-primary-dark">
-              {site.hero_cta_label}
-            </a>
-          )}
+          <div className="mt-8 flex flex-wrap gap-3">
+            {site.hero_cta_label && site.hero_cta_url && (
+              <a href={site.hero_cta_url} className="inline-flex rounded-[var(--radius)] bg-primary px-7 py-3 text-base font-semibold text-surface shadow-sm transition-colors hover:bg-primary-dark">
+                {site.hero_cta_label}
+              </a>
+            )}
+            {site.show_booking && (
+              <a href="/entrar" className="inline-flex rounded-[var(--radius)] border border-primary bg-surface px-7 py-3 text-base font-semibold text-primary-dark transition-colors hover:bg-tint">
+                {site.booking_cta_label ?? "Agendar"}
+              </a>
+            )}
+          </div>
         </div>
       </section>
 
       {/* Sobre */}
-      {(site.about_title || site.about_body) && (
+      {site.show_about && (site.about_title || site.about_body) && (
         <section className="mx-auto w-full max-w-3xl px-6 py-16">
           <h2 className="text-2xl font-extrabold tracking-tight text-ink">{site.about_title ?? "Sobre"}</h2>
           {site.about_body && (
@@ -112,7 +146,7 @@ export default async function TenantHome() {
       )}
 
       {/* Ofertas */}
-      {offerings.length > 0 && (
+      {site.show_offerings && offerings.length > 0 && (
         <section className="border-t border-edge bg-soft">
           <div className="mx-auto w-full max-w-5xl px-6 py-16">
             <h2 className="mb-6 text-2xl font-extrabold tracking-tight text-ink">O que ofereço</h2>
@@ -137,21 +171,50 @@ export default async function TenantHome() {
         </section>
       )}
 
+      {/* Eventos */}
+      {site.show_events && events.length > 0 && (
+        <section className="mx-auto w-full max-w-5xl px-6 py-16">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-extrabold tracking-tight text-ink">Próximos eventos</h2>
+            <a href="/calendario" className="text-sm font-semibold text-primary-dark hover:underline">Ver calendário</a>
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {events.map((e) => (
+              <li key={e.id} className="rounded-[var(--radius)] border border-edge bg-surface p-4 shadow-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-ink">{e.title}</span>
+                  <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-dark">{EV_TYPE_LABEL[e.type] ?? e.type}</span>
+                </div>
+                <div className="mt-0.5 text-sm text-sub">
+                  {dateFmt.format(new Date(e.event_date + "T00:00:00"))}{e.start_time ? ` · ${e.start_time.slice(0, 5)}` : ""}{e.location ? ` · ${e.location}` : ""}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Contato / rodapé */}
       <footer className="border-t border-edge">
         <div className="mx-auto w-full max-w-5xl px-6 py-12">
-          <h2 className="text-lg font-bold text-ink">Contato</h2>
-          <div className="mt-3 flex flex-col gap-1 text-sm text-sub">
-            {site.contact_whatsapp && <a href={`https://wa.me/${site.contact_whatsapp.replace(/\D/g, "")}`} className="hover:text-primary-dark">WhatsApp: {site.contact_whatsapp}</a>}
-            {site.contact_email && <a href={`mailto:${site.contact_email}`} className="hover:text-primary-dark">{site.contact_email}</a>}
-            {site.contact_phone && <span>{site.contact_phone}</span>}
-            {site.address && <span>{site.address}</span>}
-          </div>
-          <div className="mt-4 flex flex-wrap gap-4 text-sm font-medium text-primary-dark">
-            {socials.filter(([, v]) => v).map(([kind, v]) => (
-              <a key={kind} href={socialHref(kind, v as string)} target="_blank" rel="noreferrer" className="capitalize hover:underline">{kind}</a>
-            ))}
-          </div>
+          {site.show_contact && hasContact && (
+            <>
+              <h2 className="text-lg font-bold text-ink">Contato</h2>
+              <div className="mt-3 flex flex-col gap-1 text-sm text-sub">
+                {site.contact_whatsapp && <a href={`https://wa.me/${site.contact_whatsapp.replace(/\D/g, "")}`} className="hover:text-primary-dark">WhatsApp: {site.contact_whatsapp}</a>}
+                {site.contact_email && <a href={`mailto:${site.contact_email}`} className="hover:text-primary-dark">{site.contact_email}</a>}
+                {site.contact_phone && <span>{site.contact_phone}</span>}
+                {site.address && <span>{site.address}</span>}
+              </div>
+            </>
+          )}
+          {hasSocials && (
+            <div className="mt-4 flex flex-wrap gap-4 text-sm font-medium text-primary-dark">
+              {socials.filter(([, v]) => v).map(([kind, v]) => (
+                <a key={kind} href={socialHref(kind, v as string)} target="_blank" rel="noreferrer" className="capitalize hover:underline">{kind}</a>
+              ))}
+            </div>
+          )}
           <p className="mt-8 text-xs text-hint">© {org.name} · feito com Listeny</p>
         </div>
       </footer>

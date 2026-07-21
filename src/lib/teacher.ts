@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { resolveTenant, type Tenant } from "@/lib/tenant";
 import { createClient } from "@/lib/supabase/server";
 import { MANAGER_ROLES, type Role } from "@/lib/roles";
-import { planModules, type ModuleKey } from "@/lib/modules";
+import { effectiveModules, type ModuleKey } from "@/lib/modules";
 
 export type ManagerContext = {
   tenant: Tenant;
@@ -32,7 +32,12 @@ export async function requireManager(): Promise<ManagerContext> {
   if (!user) redirect("/entrar?next=/gerenciar");
 
   const plan = tenant.org.plan;
-  const modules = planModules(plan);
+  const { data: om } = await supabase
+    .from("org_modules").select("module_key, enabled").eq("org_id", tenant.org.id);
+  const disabled = new Set(
+    (om ?? []).filter((m) => m.enabled === false).map((m) => m.module_key as string),
+  );
+  const modules = effectiveModules(plan, disabled);
 
   if (tenant.org.owner_id === user.id) {
     return { tenant, userId: user.id, role: "owner", plan, modules };

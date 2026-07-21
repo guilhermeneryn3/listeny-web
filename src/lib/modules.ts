@@ -6,7 +6,7 @@ import type { Plan } from "@/lib/plans";
  * Início e Ajustes NÃO são módulos gateados — sempre presentes.
  */
 export type ModuleKey =
-  | "alunos" | "turmas" | "agenda" | "site"
+  | "alunos" | "turmas" | "agenda" | "site" | "eventos"
   | "aulas" | "progresso" | "financeiro"
   | "equipe" | "marketing" | "rh";
 
@@ -23,6 +23,7 @@ export const MODULES: ModuleDef[] = [
   { key: "turmas", label: "Turmas", href: "/gerenciar/turmas", built: true },
   { key: "agenda", label: "Agenda", href: "/gerenciar/agenda", built: true },
   { key: "site", label: "Site", href: "/gerenciar/site", built: true },
+  { key: "eventos", label: "Eventos", href: "/gerenciar/eventos", built: true },
   { key: "aulas", label: "Aulas", href: "/gerenciar/aulas", built: true },
   { key: "progresso", label: "Progresso", href: "/gerenciar/progresso" },
   { key: "financeiro", label: "Financeiro", href: "/gerenciar/financeiro", built: true },
@@ -35,9 +36,9 @@ export const MODULES: ModuleDef[] = [
 export const PLAN_MODULES: Record<Plan, ModuleKey[]> = {
   free: ["alunos", "turmas", "agenda", "site"],
   basico: ["alunos", "turmas", "agenda", "site", "aulas"],
-  intermediario: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe"],
-  premium: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing"],
-  enterprise: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "rh"],
+  intermediario: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "eventos"],
+  premium: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "eventos"],
+  enterprise: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "rh", "eventos"],
 };
 
 const PLAN_ORDER: Plan[] = ["free", "basico", "intermediario", "premium", "enterprise"];
@@ -47,6 +48,10 @@ export function planModules(plan: string | null | undefined): ModuleKey[] {
 }
 export function hasModule(plan: string | null | undefined, key: ModuleKey): boolean {
   return planModules(plan).includes(key);
+}
+/** Módulos efetivos = os do plano menos os que o org desligou (org_modules.enabled=false). */
+export function effectiveModules(plan: string | null | undefined, disabled: Set<string>): ModuleKey[] {
+  return planModules(plan).filter((k) => !disabled.has(k));
 }
 export function moduleLabel(key: ModuleKey): string {
   return MODULES.find((m) => m.key === key)?.label ?? key;

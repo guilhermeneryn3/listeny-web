@@ -13,6 +13,8 @@ const brl = (v: number, c: string) => {
   catch { return `R$ ${v.toFixed(2)}`; }
 };
 type Charge = { id: string; title: string; amount: number; currency: string; due_date: string | null; status: "pending" | "paid" | "canceled" };
+type EvLite = { id: string; title: string; type: string; event_date: string; start_time: string | null; location: string | null };
+const EV_TYPE_LABEL: Record<string, string> = { excursao: "Excursão", reuniao: "Reunião", evento: "Evento", feriado: "Feriado", aviso: "Aviso" };
 
 type Sess = {
   id: string; title: string; kind: "in_person" | "online";
@@ -99,6 +101,17 @@ export default async function AlunoPage() {
     }));
   }
   const todayStr = new Date(now).toISOString().slice(0, 10);
+
+  // ── Eventos públicos (próximos) ──
+  const { data: evData } = await supabase
+    .from("events")
+    .select("id, title, type, event_date, start_time, location")
+    .eq("org_id", tenant.org.id)
+    .eq("visibility", "public")
+    .gte("event_date", todayStr)
+    .order("event_date", { ascending: true })
+    .limit(8);
+  const events = (evData ?? []) as EvLite[];
 
   // ── Vagas abertas p/ agendar (se o professor ligou) ──
   let openSlots: Sess[] = [];
@@ -194,6 +207,26 @@ export default async function AlunoPage() {
                 </li>
               );
             })}
+          </ul>
+        </>
+      )}
+
+      {/* Eventos públicos */}
+      {events.length > 0 && (
+        <>
+          <h2 className="mb-2 text-sm font-semibold text-sub">Eventos</h2>
+          <ul className="mb-8 flex flex-col gap-2">
+            {events.map((e) => (
+              <li key={e.id} className="rounded-[var(--radius)] border border-edge bg-surface p-4 shadow-sm">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-ink">{e.title}</span>
+                  <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-dark">{EV_TYPE_LABEL[e.type] ?? e.type}</span>
+                </div>
+                <div className="mt-0.5 text-sm text-sub">
+                  {dateFmt.format(new Date(e.event_date + "T00:00:00"))}{e.start_time ? ` · ${e.start_time.slice(0, 5)}` : ""}{e.location ? ` · ${e.location}` : ""}
+                </div>
+              </li>
+            ))}
           </ul>
         </>
       )}

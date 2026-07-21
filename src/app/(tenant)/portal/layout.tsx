@@ -37,6 +37,8 @@ export default async function TenantLayout({
   const { org, branding, tokens } = tenant;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const { count: publicEvents } = await supabase
+    .from("events").select("id", { count: "exact", head: true }).eq("org_id", org.id).eq("visibility", "public");
   const style = {
     ...tokensToCssVars(tokens),
     fontFamily: "var(--font-tenant)",
@@ -61,14 +63,18 @@ export default async function TenantLayout({
           <span className="text-lg font-extrabold tracking-tight">
             {org.name}
           </span>
-          {!user && (
-            <a
-              href="/entrar"
-              className="ml-auto rounded-lg border border-edge px-3 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-primary"
-            >
-              Entrar
-            </a>
-          )}
+          <nav className="ml-auto flex items-center gap-2">
+            {!!publicEvents && publicEvents > 0 && (
+              <a href="/calendario" className="rounded-lg px-3 py-1.5 text-sm font-semibold text-ink transition-colors hover:bg-soft">
+                Calendário
+              </a>
+            )}
+            {!user && (
+              <a href="/entrar" className="rounded-lg border border-edge px-3 py-1.5 text-sm font-semibold text-ink transition-colors hover:border-primary">
+                Entrar
+              </a>
+            )}
+          </nav>
         </div>
       </header>
 

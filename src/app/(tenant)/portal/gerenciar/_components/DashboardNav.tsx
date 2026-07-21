@@ -26,6 +26,7 @@ const ICONS: Record<ModuleKey | "inicio" | "ajustes", string> = {
   turmas: "M4 7h16M4 12h16M4 17h16",
   agenda: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",
   site: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18",
+  eventos: "M12 3l2.4 5 5.6.6-4 4 1 5.4-5-2.7-5 2.7 1-5.4-4-4 5.6-.6z",
   aulas: "M4 5h11a2 2 0 0 1 2 2v12H6a2 2 0 0 1-2-2V5Z",
   progresso: "M4 19V5M4 19h16M8 15v-3M12 15V9M16 15v-6",
   financeiro: "M3 7h18v10H3zM3 10h18M7 14h3",
@@ -77,11 +78,10 @@ export function DashboardNav({
         );
       })}
 
-      <span className={`${base} cursor-default text-hint`} aria-disabled>
+      <Link href="/gerenciar/ajustes" className={`${base} ${pathname.startsWith("/gerenciar/ajustes") ? "bg-tint text-primary-dark" : "text-sub hover:bg-soft hover:text-ink"}`}>
         <Icon d={ICONS.ajustes} />
         <span>Ajustes</span>
-        <span className="ml-auto rounded-full bg-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-hint">em breve</span>
-      </span>
+      </Link>
 
       <button
         type="button"

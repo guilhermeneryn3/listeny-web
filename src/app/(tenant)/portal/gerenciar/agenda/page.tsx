@@ -62,5 +62,15 @@ export default async function AgendaPage() {
   const students = (studentsRes.data ?? []) as StudentLite[];
   const classes = (classesRes.data ?? []) as ClassLite[];
 
-  return <AgendaManager sessions={sessions} students={students} classes={classes} bookingEnabled={bookingEnabled} />;
+  const todayKey = new Date().toISOString().slice(0, 10);
+
+  return (
+    <AgendaManager
+      sessions={sessions}
+      students={students}
+      classes={classes}
+      bookingEnabled={bookingEnabled}
+      todayKey={todayKey}
+    />
+  );
 }

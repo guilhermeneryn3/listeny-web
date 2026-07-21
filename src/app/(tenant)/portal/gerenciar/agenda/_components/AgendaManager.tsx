@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { MonthCalendar, localDateKey } from "@/components/MonthCalendar";
 import {
   createSession,
   updateSession,
@@ -48,18 +49,22 @@ function SessionForm({
   students,
   classes,
   onDone,
+  defaultDate,
 }: {
   session?: SessionRow;
   students: StudentLite[];
   classes: ClassLite[];
   onDone: () => void;
+  defaultDate?: string | null;
 }) {
   const isEdit = !!session;
   const [state, action, pending] = useActionState<SessionState, FormData>(
     isEdit ? updateSession : createSession,
     {},
   );
-  const [local, setLocal] = useState(session ? toLocalInput(session.starts_at) : "");
+  const [local, setLocal] = useState(
+    session ? toLocalInput(session.starts_at) : defaultDate ? `${defaultDate}T09:00` : "",
+  );
   const startsAtIso = local ? new Date(local).toISOString() : "";
   const picked = new Set(session?.participants.map((p) => p.student_id) ?? []);
 
@@ -253,18 +258,28 @@ export function AgendaManager({
   students,
   classes,
   bookingEnabled,
+  todayKey,
 }: {
   sessions: SessionRow[];
   students: StudentLite[];
   classes: ClassLite[];
   bookingEnabled: boolean;
+  todayKey: string;
 }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string | null>(todayKey);
 
-  // agrupa por dia (local)
+  const calItems = sessions.map((s) => ({
+    key: localDateKey(s.starts_at),
+    tone: (s.bookable && s.participants.length === 0 ? "success" : "primary") as "success" | "primary",
+  }));
+  const [cy, cm] = todayKey.split("-").map(Number);
+
+  // lista: filtra pelo dia selecionado (ou todos) e agrupa por dia (local)
+  const shown = selectedDay ? sessions.filter((s) => localDateKey(s.starts_at) === selectedDay) : sessions;
   const groups = new Map<string, SessionRow[]>();
-  for (const s of sessions) {
+  for (const s of shown) {
     const key = dayFmt.format(new Date(s.starts_at));
     (groups.get(key) ?? groups.set(key, []).get(key)!).push(s);
   }
@@ -293,15 +308,33 @@ export function AgendaManager({
         </button>
       </form>
 
-      {adding && (
-        <div className="mb-4">
-          <SessionForm students={students} classes={classes} onDone={() => setAdding(false)} />
+      <div className="mb-4">
+        <MonthCalendar
+          year={cy}
+          month={cm - 1}
+          todayKey={todayKey}
+          items={calItems}
+          selectedKey={selectedDay}
+          onSelect={(k) => { setSelectedDay(k); setAdding(false); }}
+        />
+      </div>
+
+      {selectedDay && (
+        <div className="mb-3 flex items-center justify-between text-sm">
+          <span className="font-medium text-sub">Mostrando o dia selecionado</span>
+          <button type="button" onClick={() => setSelectedDay(null)} className="font-medium text-primary-dark hover:underline">Ver todos os dias</button>
         </div>
       )}
 
-      {sessions.length === 0 && !adding ? (
+      {adding && (
+        <div className="mb-4">
+          <SessionForm students={students} classes={classes} onDone={() => setAdding(false)} defaultDate={selectedDay} />
+        </div>
+      )}
+
+      {shown.length === 0 && !adding ? (
         <div className="rounded-[var(--radius)] border border-dashed border-edge bg-soft p-8 text-center text-sm text-sub">
-          Nenhuma sessão agendada. Crie a primeira — presencial ou online.
+          {selectedDay ? "Nenhuma sessão neste dia." : "Nenhuma sessão agendada. Crie a primeira — presencial ou online."}
         </div>
       ) : (
         <div className="flex flex-col gap-6">

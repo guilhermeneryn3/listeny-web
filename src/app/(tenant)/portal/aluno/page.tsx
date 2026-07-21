@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { requireStudent } from "@/lib/student";
 import { createClient } from "@/lib/supabase/server";
-import { setLessonDone, bookSession } from "./actions";
+import { setLessonDone } from "./actions";
+import { StudentBooking } from "./_components/StudentBooking";
 
 const dayFmt = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "short" });
 const timeFmt = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -199,30 +200,7 @@ export default async function AlunoPage() {
 
       {/* Agendar (vagas abertas) */}
       {bookingEnabled && openSlots.length > 0 && (
-        <>
-          <h2 className="mb-2 text-sm font-semibold text-sub">Agendar uma aula</h2>
-          <ul className="mb-8 flex flex-col gap-2">
-            {openSlots.map((s) => (
-              <li key={s.id} className="flex items-center gap-3 rounded-[var(--radius)] border border-edge bg-surface p-4 shadow-sm">
-                <div className="w-16 shrink-0 text-center">
-                  <div className="text-lg font-extrabold text-ink">{timeFmt.format(new Date(s.starts_at))}</div>
-                  <div className="text-xs text-hint">{s.duration_min}min</div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold text-ink">{s.title}</span>
-                    <span className="rounded-full bg-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-dark">{s.kind === "online" ? "online" : "presencial"}</span>
-                  </div>
-                  <div className="mt-0.5 text-sm capitalize text-sub">{dayFmt.format(new Date(s.starts_at))}</div>
-                </div>
-                <form action={bookSession} className="shrink-0">
-                  <input type="hidden" name="session_id" value={s.id} />
-                  <button type="submit" className="rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-surface transition-colors hover:bg-primary-dark">Reservar</button>
-                </form>
-              </li>
-            ))}
-          </ul>
-        </>
+        <StudentBooking openSlots={openSlots} todayKey={todayStr} />
       )}
 
       {/* Agenda */}

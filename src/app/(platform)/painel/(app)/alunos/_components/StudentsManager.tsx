@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
-import { studentField, type FieldConfig } from "@/lib/studentFields";
+import { studentField, fieldsByGroup, type FieldConfig } from "@/lib/studentFields";
 import {
   createStudent,
   updateStudent,
@@ -75,8 +75,15 @@ function FieldInput({ cfg, student }: { cfg: FieldConfig; student?: Student }) {
 
 function Fields({ fields, student }: { fields: FieldConfig[]; student?: Student }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {fields.map((cfg) => <FieldInput key={cfg.key} cfg={cfg} student={student} />)}
+    <div className="space-y-4">
+      {fieldsByGroup(fields).map(({ group, items }) => (
+        <div key={group}>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-hint">{group}</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {items.map((cfg) => <FieldInput key={cfg.key} cfg={cfg} student={student} />)}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

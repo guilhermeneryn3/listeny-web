@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { STUDENT_FIELDS, type FieldConfig } from "@/lib/studentFields";
+import { STUDENT_FIELDS, catalogByGroup, type FieldConfig } from "@/lib/studentFields";
 import { saveStudentForm, type StudentState } from "../../actions";
 
 type Sel = Record<string, { enabled: boolean; required: boolean }>;
@@ -65,38 +65,43 @@ export function FieldsConfigurator({
       <div className="rounded-[var(--radius)] border border-edge bg-surface p-5 shadow-sm">
         <h2 className="text-sm font-bold uppercase tracking-wide text-hint">Campos do cadastro</h2>
         <p className="mt-1 text-xs text-sub">Escolha o que aparece no cadastro (do professor e do link) e o que é obrigatório.</p>
-        <ul className="mt-3 flex flex-col divide-y divide-edge">
-          {STUDENT_FIELDS.map((f) => {
-            const s = sel[f.key];
-            return (
-              <li key={f.key} className="flex items-center justify-between gap-4 py-2.5">
-                <label className="flex items-center gap-2 text-sm font-medium text-ink">
-                  <input
-                    type="checkbox"
-                    checked={s.enabled}
-                    disabled={f.alwaysOn}
-                    onChange={(e) =>
-                      setSel((prev) => ({
-                        ...prev,
-                        [f.key]: { enabled: e.target.checked, required: e.target.checked ? prev[f.key].required : false },
-                      }))
-                    }
-                  />
-                  {f.label}
-                </label>
-                <label className={`flex items-center gap-2 text-sm ${s.enabled ? "text-sub" : "text-hint opacity-50"}`}>
-                  <input
-                    type="checkbox"
-                    checked={s.required}
-                    disabled={f.alwaysOn || !s.enabled}
-                    onChange={(e) => setSel((prev) => ({ ...prev, [f.key]: { ...prev[f.key], required: e.target.checked } }))}
-                  />
-                  obrigatório
-                </label>
-              </li>
-            );
-          })}
-        </ul>
+        {catalogByGroup().map(({ group, items }) => (
+          <div key={group} className="mt-4">
+            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-hint">{group}</h3>
+            <ul className="flex flex-col divide-y divide-edge">
+              {items.map((f) => {
+                const s = sel[f.key];
+                return (
+                  <li key={f.key} className="flex items-center justify-between gap-4 py-2.5">
+                    <label className="flex items-center gap-2 text-sm font-medium text-ink">
+                      <input
+                        type="checkbox"
+                        checked={s.enabled}
+                        disabled={f.alwaysOn}
+                        onChange={(e) =>
+                          setSel((prev) => ({
+                            ...prev,
+                            [f.key]: { enabled: e.target.checked, required: e.target.checked ? prev[f.key].required : false },
+                          }))
+                        }
+                      />
+                      {f.label}
+                    </label>
+                    <label className={`flex items-center gap-2 text-sm ${s.enabled ? "text-sub" : "text-hint opacity-50"}`}>
+                      <input
+                        type="checkbox"
+                        checked={s.required}
+                        disabled={f.alwaysOn || !s.enabled}
+                        onChange={(e) => setSel((prev) => ({ ...prev, [f.key]: { ...prev[f.key], required: e.target.checked } }))}
+                      />
+                      obrigatório
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </div>
 
       <div className="flex items-center justify-end gap-3">

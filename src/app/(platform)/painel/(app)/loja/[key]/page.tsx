@@ -17,10 +17,10 @@ type Action =
   | { kind: "soon" }
   | { kind: "toggle"; on: boolean; label: string; danger: boolean };
 
-function decideAction(entry: StoreEntry, native: boolean, included: boolean, active: boolean): Action {
+function decideAction(entry: StoreEntry, native: boolean, active: boolean): Action {
   if (native) return { kind: "none" };
   if (entry.kind === "module" && !entry.built) return { kind: "soon" };
-  if (included) return { kind: "toggle", on: !active, label: active ? "Ocultar" : "Exibir", danger: active };
+  // Incluído (grátis) e add-on (pago) instalam do mesmo jeito — a diferença é só o preço.
   return { kind: "toggle", on: !active, label: active ? "Remover" : "Instalar", danger: active };
 }
 
@@ -55,7 +55,7 @@ export default async function ModuleDetailPage({ params }: { params: Promise<{ k
       ? effectiveModules(plan, rows).includes(entry.key as ModuleKey)
       : installedProfessions(rows).includes(entry.key as ProfessionKey);
 
-  const action = decideAction(entry, native, included, active);
+  const action = decideAction(entry, native, active);
   const canManage = isAdmin(role);
   const priceLine = native || included ? "Incluído no seu plano — sem custo extra." : `${brl(entry.price)}/mês`;
 
@@ -109,7 +109,7 @@ export default async function ModuleDetailPage({ params }: { params: Promise<{ k
           <>
             <span className="text-sm text-sub">
               {included
-                ? active ? "Aparece no seu painel." : "Está oculto no seu painel."
+                ? active ? "Instalado — incluído no seu plano (grátis)." : "Incluído no seu plano — instale grátis quando quiser."
                 : active ? `Instalado · ${brl(entry.price)}/mês no seu total.` : `Instalar adiciona ${brl(entry.price)}/mês.`}
             </span>
             {canManage ? (

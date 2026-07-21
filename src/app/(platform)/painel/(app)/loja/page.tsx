@@ -12,10 +12,11 @@ const brl = (n: number) =>
 
 type Badge = Pick<StoreCardItem, "badgeText" | "badgeTone">;
 
-function includedBadge(m: ModuleDef): Badge {
+function includedBadge(m: ModuleDef, active: boolean): Badge {
   if (!m.built) return { badgeText: "em breve", badgeTone: "muted" };
   if (m.category === "nativo") return { badgeText: "Nativo", badgeTone: "on" };
-  return { badgeText: "Incluído", badgeTone: "on" };
+  if (active) return { badgeText: "Instalado", badgeTone: "on" };
+  return { badgeText: "Incluído", badgeTone: "price" };
 }
 function addonBadge(m: ModuleDef, active: boolean): Badge {
   if (!m.built) return { badgeText: "em breve", badgeTone: "muted" };
@@ -39,7 +40,7 @@ export default async function LojaPage() {
   const base = (m: ModuleDef) => ({ key: m.key, label: m.label, description: m.description, icon: m.icon });
 
   const included: StoreCardItem[] = MODULES.filter((m) => isIncluded(plan, m.key)).map((m) => ({
-    ...base(m), ...includedBadge(m),
+    ...base(m), ...includedBadge(m, active.has(m.key)),
   }));
   const modules: StoreCardItem[] = MODULES.filter((m) => !isIncluded(plan, m.key)).map((m) => ({
     ...base(m), ...addonBadge(m, active.has(m.key)),

@@ -119,17 +119,18 @@ export const PROFESSIONS: ProfessionDef[] = [
 ];
 
 /**
- * Mapa plano→módulos INCLUÍDOS (grátis dentro do plano). Modelo À LA CARTE: nenhum feature-módulo
- * vem incluso — só os NATIVOS (alunos/turmas/agenda). O plano é preço-base + limites (ver
- * PLAN_LIMITS); todo módulo (site, aulas, eventos, financeiro, equipe, marketing, rh, portal-aluno)
- * é add-on pago instalado na Loja. (Se um dia quiser bundlar algo num plano, é só listar aqui.)
+ * Mapa plano→módulos INCLUÍDOS (grátis dentro do plano). Modelo HÍBRIDO:
+ *  - o plano dá certos módulos GRÁTIS (listados aqui) + os nativos;
+ *  - módulos fora da lista são add-ons PAGOS;
+ *  - em ambos os casos INSTALAR é opção do usuário (opt-in) — incluído não vem ligado sozinho,
+ *    só não custa extra. Deixa o painel/site limpo, do jeito de cada um.
  */
 export const PLAN_MODULES: Record<Plan, ModuleKey[]> = {
   free: ["alunos", "turmas", "agenda"],
-  basico: ["alunos", "turmas", "agenda"],
-  intermediario: ["alunos", "turmas", "agenda"],
-  premium: ["alunos", "turmas", "agenda"],
-  enterprise: ["alunos", "turmas", "agenda"],
+  basico: ["alunos", "turmas", "agenda", "site", "aulas"],
+  intermediario: ["alunos", "turmas", "agenda", "site", "aulas", "eventos", "financeiro", "equipe", "portal-aluno", "progresso"],
+  premium: ["alunos", "turmas", "agenda", "site", "aulas", "eventos", "financeiro", "equipe", "portal-aluno", "progresso", "marketing"],
+  enterprise: ["alunos", "turmas", "agenda", "site", "aulas", "eventos", "financeiro", "equipe", "portal-aluno", "progresso", "marketing", "rh"],
 };
 
 export function planModules(plan: string | null | undefined): ModuleKey[] {
@@ -153,22 +154,18 @@ export function isIncluded(plan: string | null | undefined, key: ModuleKey): boo
 export type OrgModuleRow = { module_key: string; enabled: boolean };
 
 /**
- * Módulos EFETIVOS (ativos) de um org = nativos + incluídos-não-ocultos + add-ons instalados.
- *  - nativo: sempre ativo.
- *  - módulo incluído no plano: ativo salvo se o org marcou enabled=false (ocultar).
- *  - módulo fora do plano (add-on): ativo só se o org instalou (enabled=true).
+ * Módulos EFETIVOS (ativos) de um org. Modelo OPT-IN: só os NATIVOS vêm ligados; qualquer outro
+ * módulo (incluído no plano OU add-on pago) fica ativo só se o usuário INSTALOU (enabled=true).
+ * `plan` fica na assinatura por compatibilidade (a distinção incluído×pago é de PREÇO, ver
+ * `isIncluded`/`monthlyTotal`, não de ativação).
  */
 export function effectiveModules(
   plan: string | null | undefined,
   rows: OrgModuleRow[],
 ): ModuleKey[] {
+  void plan;
   const state = new Map<string, boolean>(rows.map((r) => [r.module_key, r.enabled]));
-  return MODULES.filter((m) => {
-    if (m.category === "nativo") return true;
-    const included = planModules(plan).includes(m.key);
-    const row = state.get(m.key);
-    return included ? row !== false : row === true;
-  }).map((m) => m.key);
+  return MODULES.filter((m) => m.category === "nativo" || state.get(m.key) === true).map((m) => m.key);
 }
 
 /** Profissões instaladas (enabled=true) — só as chaves conhecidas do catálogo. */

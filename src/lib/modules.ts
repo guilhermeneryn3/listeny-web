@@ -118,13 +118,18 @@ export const PROFESSIONS: ProfessionDef[] = [
     details: "Perfil para professores de desenho e artes visuais — marca a área de atuação do portal.", features: PROFESSION_FEATURES },
 ];
 
-/** Mapa plano→módulos INCLUÍDOS (grátis dentro do plano). Nativos vêm em todos por padrão. */
+/**
+ * Mapa plano→módulos INCLUÍDOS (grátis dentro do plano). Modelo À LA CARTE: nenhum feature-módulo
+ * vem incluso — só os NATIVOS (alunos/turmas/agenda). O plano é preço-base + limites (ver
+ * PLAN_LIMITS); todo módulo (site, aulas, eventos, financeiro, equipe, marketing, rh, portal-aluno)
+ * é add-on pago instalado na Loja. (Se um dia quiser bundlar algo num plano, é só listar aqui.)
+ */
 export const PLAN_MODULES: Record<Plan, ModuleKey[]> = {
   free: ["alunos", "turmas", "agenda"],
-  basico: ["alunos", "turmas", "agenda", "aulas"],
-  intermediario: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "eventos", "portal-aluno"],
-  premium: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "eventos", "portal-aluno"],
-  enterprise: ["alunos", "turmas", "agenda", "site", "aulas", "progresso", "financeiro", "equipe", "marketing", "rh", "eventos", "portal-aluno"],
+  basico: ["alunos", "turmas", "agenda"],
+  intermediario: ["alunos", "turmas", "agenda"],
+  premium: ["alunos", "turmas", "agenda"],
+  enterprise: ["alunos", "turmas", "agenda"],
 };
 
 export function planModules(plan: string | null | undefined): ModuleKey[] {

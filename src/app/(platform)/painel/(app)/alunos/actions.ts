@@ -6,6 +6,7 @@ import { requireManager } from "@/lib/teacher";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { planLimits, withinLimit } from "@/lib/plans";
+import { effectiveFields, isCoreField, studentField, type FieldConfig } from "@/lib/studentFields";
 
 export type StudentState = { ok?: boolean; error?: string };
 
@@ -18,6 +19,40 @@ export type GrantState = {
 function tempPassword(): string {
   const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
   return Array.from(randomBytes(10), (b) => abc[b % abc.length]).join("");
+}
+
+function refresh() {
+  revalidatePath("/painel/alunos");
+  revalidatePath("/painel/inicio");
+}
+
+/** Config efetiva dos campos do cadastro deste org (catálogo em lib/studentFields). */
+async function loadFieldConfig(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  orgId: string,
+): Promise<FieldConfig[]> {
+  const { data } = await supabase.from("org_student_form").select("fields").eq("org_id", orgId).maybeSingle();
+  return effectiveFields((data as { fields?: FieldConfig[] } | null)?.fields ?? null);
+}
+
+/** Lê os valores do form pela config: core → colunas, extras → profile (jsonb). Valida obrigatórios. */
+function collectStudentFields(fd: FormData, config: FieldConfig[]): {
+  core: Record<string, string | null>;
+  profile: Record<string, string>;
+  error?: string;
+} {
+  const core: Record<string, string | null> = {};
+  const profile: Record<string, string> = {};
+  for (const cfg of config) {
+    const f = studentField(cfg.key);
+    if (!f) continue;
+    const raw = String(fd.get(cfg.key) ?? "").trim();
+    const value = cfg.key === "email" ? raw.toLowerCase() : raw;
+    if (cfg.required && !value) return { core, profile, error: `Preencha: ${f.label}.` };
+    if (isCoreField(cfg.key)) core[cfg.key] = value || null;
+    else if (value) profile[cfg.key] = value;
+  }
+  return { core, profile };
 }
 
 /**
@@ -48,8 +83,6 @@ export async function grantStudentAccess(
   if (!email) return { error: "Cadastre um e-mail no aluno antes de dar acesso." };
 
   const admin = createAdminClient();
-
-  // 1) já existe conta com esse e-mail?
   const { data: prof } = await admin.from("profiles").select("user_id").eq("email", email).maybeSingle();
 
   let userId: string;
@@ -68,41 +101,22 @@ export async function grantStudentAccess(
     await admin.from("profiles").update({ must_change_password: true }).eq("user_id", userId);
   }
 
-  // 2) vincula o roster + garante o contexto (membership student)
   await admin.from("students").update({ user_id: userId }).eq("id", studentId).eq("org_id", orgId);
   await admin
     .from("memberships")
     .upsert({ org_id: orgId, user_id: userId, role: "student" }, { onConflict: "org_id,user_id" });
 
-  // NÃO revalida aqui de propósito: revalidar recarregaria a linha e sumiria com o resultado
-  // (a senha) antes de o professor copiar. O badge "com acesso" atualiza no próximo load.
   return tmp ? { tempPassword: tmp } : { linked: true };
 }
 
-function readFields(formData: FormData) {
-  return {
-    name: String(formData.get("name") ?? "").trim(),
-    email: String(formData.get("email") ?? "").trim().toLowerCase() || null,
-    phone: String(formData.get("phone") ?? "").trim() || null,
-    notes: String(formData.get("notes") ?? "").trim() || null,
-  };
-}
-
-function refresh() {
-  revalidatePath("/painel/alunos");
-  revalidatePath("/painel/inicio");
-}
-
-/** Cria um aluno no roster do professor (org derivado do gate, nunca do form). */
-export async function createStudent(
-  _prev: StudentState,
-  formData: FormData,
-): Promise<StudentState> {
+/** Cria um aluno no roster do professor (campos pela config do org). */
+export async function createStudent(_prev: StudentState, formData: FormData): Promise<StudentState> {
   const { tenant } = await requireManager();
-  const { name, email, phone, notes } = readFields(formData);
-  if (!name) return { error: "Informe o nome do aluno." };
-
   const supabase = await createClient();
+  const config = await loadFieldConfig(supabase, tenant.org.id);
+  const { core, profile, error } = collectStudentFields(formData, config);
+  if (error) return { error };
+  if (!core.name) return { error: "Informe o nome do aluno." };
 
   // teto de alunos por plano
   const [{ data: org }, { count }] = await Promise.all([
@@ -114,43 +128,68 @@ export async function createStudent(
     return { error: `Limite de alunos do plano atingido (${limit}). Faça upgrade para adicionar mais.` };
   }
 
-  const { error } = await supabase
+  const { error: e } = await supabase
     .from("students")
-    .insert({ org_id: tenant.org.id, name, email, phone, notes });
-  if (error) {
-    if (error.code === "23505") return { error: "Já existe um aluno com esse e-mail." };
+    .insert({ org_id: tenant.org.id, ...core, profile, status: "active" });
+  if (e) {
+    if (e.code === "23505") return { error: "Já existe um aluno com esse e-mail." };
     return { error: "Não foi possível salvar o aluno." };
   }
   refresh();
   return { ok: true };
 }
 
-/** Edita dados de um aluno do próprio org. */
-export async function updateStudent(
-  _prev: StudentState,
-  formData: FormData,
-): Promise<StudentState> {
+/** Edita dados de um aluno do próprio org (campos pela config). */
+export async function updateStudent(_prev: StudentState, formData: FormData): Promise<StudentState> {
   const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
-  const { name, email, phone, notes } = readFields(formData);
   if (!id) return { error: "Aluno inválido." };
-  if (!name) return { error: "Informe o nome do aluno." };
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const config = await loadFieldConfig(supabase, tenant.org.id);
+  const { core, profile, error } = collectStudentFields(formData, config);
+  if (error) return { error };
+  if (!core.name) return { error: "Informe o nome do aluno." };
+
+  const { error: e } = await supabase
     .from("students")
-    .update({ name, email, phone, notes })
+    .update({ ...core, profile })
     .eq("id", id)
     .eq("org_id", tenant.org.id);
-  if (error) {
-    if (error.code === "23505") return { error: "Já existe um aluno com esse e-mail." };
+  if (e) {
+    if (e.code === "23505") return { error: "Já existe um aluno com esse e-mail." };
     return { error: "Não foi possível salvar as alterações." };
   }
   refresh();
   return { ok: true };
 }
 
-/** Ativa/inativa um aluno (soft — preserva histórico). */
+/** Salva a config do formulário de cadastro (campos + toggle do autocadastro). */
+export async function saveStudentForm(_prev: StudentState, formData: FormData): Promise<StudentState> {
+  const { tenant } = await requireManager();
+  const enrollEnabled = String(formData.get("enroll_enabled") ?? "") === "on";
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(String(formData.get("fields") ?? "[]"));
+  } catch {
+    return { error: "Configuração inválida." };
+  }
+  const list = Array.isArray(parsed)
+    ? parsed.map((f) => ({ key: String((f as FieldConfig).key), required: !!(f as FieldConfig).required }))
+    : [];
+  const fields = effectiveFields(list);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("org_student_form")
+    .upsert({ org_id: tenant.org.id, enroll_enabled: enrollEnabled, fields }, { onConflict: "org_id" });
+  if (error) return { error: "Não foi possível salvar." };
+  revalidatePath("/painel/alunos/campos");
+  revalidatePath("/painel/alunos");
+  return { ok: true };
+}
+
+/** Ativa/inativa/aprova um aluno (soft — preserva histórico). Aprovar pendente = status active. */
 export async function setStudentStatus(formData: FormData): Promise<void> {
   const { tenant } = await requireManager();
   const id = String(formData.get("id") ?? "");
@@ -158,11 +197,7 @@ export async function setStudentStatus(formData: FormData): Promise<void> {
   if (!id || (status !== "active" && status !== "inactive")) return;
 
   const supabase = await createClient();
-  await supabase
-    .from("students")
-    .update({ status })
-    .eq("id", id)
-    .eq("org_id", tenant.org.id);
+  await supabase.from("students").update({ status }).eq("id", id).eq("org_id", tenant.org.id);
   refresh();
 }
 
@@ -173,14 +208,11 @@ export async function removeStudent(formData: FormData): Promise<void> {
   if (!id) return;
 
   const supabase = await createClient();
-  // pega o vínculo antes de apagar o registro do roster
   const { data: stu } = await supabase
     .from("students").select("user_id").eq("id", id).eq("org_id", tenant.org.id).maybeSingle();
 
   await supabase.from("students").delete().eq("id", id).eq("org_id", tenant.org.id);
 
-  // remove também o acesso (membership student) deste aluno NESTE org — a conta pessoal dele
-  // continua existindo (ele pode ser aluno de outros); só perde o vínculo com esta escola.
   const userId = (stu as { user_id?: string | null } | null)?.user_id;
   if (userId) {
     await createAdminClient()
